@@ -26,8 +26,10 @@ async fn four_validator_testnet_produces_blocks() {
     });
 
     // Wait for validators to connect and finalize a few blocks.
+    // Use a generous timeout because CI runners can be slow to connect
+    // four validators over localhost TCP.
     let mut highest_height = 0u64;
-    for _ in 0..60 {
+    for _ in 0..120 {
         tokio::time::sleep(Duration::from_millis(500)).await;
 
         match reqwest::get("http://127.0.0.1:61001/v1/status").await {

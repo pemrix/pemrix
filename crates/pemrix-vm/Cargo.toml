@@ -22,7 +22,7 @@ default = []
 wasm = ["dep:wasmtime"]
 
 [dependencies.wasmtime]
-version = "23"
+version = "36.0.14"
 optional = true
 
 [dev-dependencies]
