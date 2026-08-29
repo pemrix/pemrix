@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use tracing::{info, warn};
+use tracing::info;
 
 mod demo;
 
@@ -23,12 +23,18 @@ enum Commands {
         /// Path to the node data directory.
         #[arg(short, long, default_value = "./pemrix-data")]
         data_dir: String,
+        /// Initialize as a validator and generate a validator keypair.
+        #[arg(short, long, default_value_t = false)]
+        validator: bool,
     },
     /// Start the PEMRIX node.
     Start {
         /// Path to the node data directory.
         #[arg(short, long, default_value = "./pemrix-data")]
         data_dir: String,
+        /// Start in validator mode (requires a validator key in the data directory).
+        #[arg(short, long, default_value_t = false)]
+        validator: bool,
     },
     /// Print basic node status.
     Status {
@@ -69,14 +75,33 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Init { data_dir } => {
+        Commands::Init {
+            data_dir,
+            validator,
+        } => {
             info!("Initializing PEMRIX node at {}", data_dir);
-            pemrix_node::init(&data_dir)?;
+            pemrix_node::init(&data_dir, validator)?;
+            if validator {
+                info!("Generating validator keypair");
+                let key_file = pemrix_node::generate_validator_key(&data_dir)?;
+                info!(
+                    "Validator address: {}. Keep {} secret.",
+                    key_file.address,
+                    pemrix_node::ValidatorKeyFile::FILE_NAME
+                );
+            }
             info!("Node initialized successfully.");
         }
-        Commands::Start { data_dir } => {
+        Commands::Start {
+            data_dir,
+            validator,
+        } => {
             info!("Starting PEMRIX node from {}", data_dir);
-            pemrix_node::start(&data_dir).await?;
+            if validator {
+                pemrix_node::start_validator(&data_dir).await?;
+            } else {
+                pemrix_node::start(&data_dir).await?;
+            }
         }
         Commands::Status { data_dir } => {
             info!("PEMRIX node status for {}", data_dir);
@@ -84,7 +109,6 @@ async fn main() -> Result<()> {
             println!("{}", status);
         }
         Commands::Keys { data_dir } => {
-            warn!("Key management is a stub in this release.");
             let keys = pemrix_node::keys(&data_dir)?;
             println!("{}", keys);
         }

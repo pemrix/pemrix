@@ -18,9 +18,10 @@ pub struct Node {
 }
 
 /// Initialize a new node data directory.
-pub fn init(data_dir: &str) -> Result<(), NodeError> {
+pub fn init(data_dir: &str, validator: bool) -> Result<(), NodeError> {
     std::fs::create_dir_all(data_dir)?;
-    let config = NodeConfig::for_data_dir(data_dir);
+    let mut config = NodeConfig::for_data_dir(data_dir);
+    config.validator = validator;
     config.save()?;
 
     let genesis = GenesisConfig::local_development(&[]);
@@ -32,7 +33,7 @@ pub fn init(data_dir: &str) -> Result<(), NodeError> {
 
 /// Start a PEMRIX node.
 pub async fn start(data_dir: &str) -> Result<(), NodeError> {
-    let config = NodeConfig::load(data_dir)?;
+    let mut config = NodeConfig::load(data_dir)?;
     let genesis = GenesisConfig::load(data_dir)?;
 
     info!("Starting PEMRIX node");
@@ -40,11 +41,28 @@ pub async fn start(data_dir: &str) -> Result<(), NodeError> {
     info!("Data directory: {}", config.data_dir);
     info!("Validator mode: {}", config.validator);
 
+    if config.validator {
+        let key_file = crate::keys::load(data_dir)?;
+        let local_address = key_file.address()?;
+        config.local_validator_address = Some(local_address);
+        if config.validator_set.is_none() {
+            config.validator_set = Some(crate::config::single_validator_set(local_address));
+        }
+    }
+
     if config.validator_set.is_some() && config.local_validator_address.is_some() {
         start_bft(config, genesis).await
     } else {
         start_solo(config, genesis).await
     }
+}
+
+/// Convenience wrapper to start a validator node.
+pub async fn start_validator(data_dir: &str) -> Result<(), NodeError> {
+    let mut config = NodeConfig::load(data_dir)?;
+    config.validator = true;
+    config.save()?;
+    start(data_dir).await
 }
 
 /// Run a single-validator node using solo consensus (development mode).
@@ -282,8 +300,5 @@ pub fn status(data_dir: &str) -> Result<String, NodeError> {
 
 /// Print key information.
 pub fn keys(data_dir: &str) -> Result<String, NodeError> {
-    Ok(format!(
-        "PEMRIX Node Keys ({}): key management is a stub in this release.",
-        data_dir
-    ))
+    crate::keys::status(data_dir)
 }

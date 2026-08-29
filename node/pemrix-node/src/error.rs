@@ -18,6 +18,9 @@ pub enum NodeError {
     /// Network error.
     #[error("network error")]
     Network,
+    /// Cryptographic error.
+    #[error("cryptographic error")]
+    Crypto,
     /// IO error.
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),

@@ -30,11 +30,11 @@ This document is the single source of truth for what must be built, in what orde
 | 2 | Developer Platform (SDK, RPC, testnet, demos) | Done | 15% | 15% |
 | 3 | Security & Hardening | In progress | 20% | 6% |
 | 4 | Tokenomics & Genesis | Done | 10% | 10% |
-| 5 | Validator Onboarding (Quanvio genesis validators) | Not started | 15% | 0% |
+| 5 | Validator Onboarding (Quanvio genesis validators) | In progress | 15% | 5% |
 | 6 | Live Infrastructure (RPC, explorer, faucet, pemrix.com) | Not started | 10% | 0% |
 | 7 | Public Testnet & Bug Bounty | Not started | 5% | 0% |
 | 8 | Mainnet Launch | Not started | 5% | 0% |
-| **Total** | | | **100%** | **~46%** |
+| **Total** | | | **100%** | **~51%** |
 
 ---
 
@@ -151,14 +151,14 @@ This document is the single source of truth for what must be built, in what orde
 
 | # | Deliverable | Status | Notes |
 |---|---|---|---|
-| 5.1 | Validator hardware requirements | Not started | Publish minimum and recommended specs |
-| 5.2 | Validator setup script | Not started | One-command install for Linux |
-| 5.3 | Validator configuration generator | Not started | `pemrix-node init --validator` |
-| 5.4 | Genesis validator key generation ceremony | Not started | Multi-party, offline where possible |
+| 5.1 | Validator hardware requirements | Done | Documented in `docs/VALIDATORS.md` |
+| 5.2 | Validator setup script | Done | `scripts/install-validator.sh` |
+| 5.3 | Validator configuration generator | Done | `pemrix init --validator` |
+| 5.4 | Genesis validator key generation ceremony | Partial | `pemrix init --validator` generates keys; multi-party ceremony documented |
 | 5.5 | Quanvio genesis validator deployment | Not started | First production-like nodes |
 | 5.6 | Trusted partner validator onboarding | Not started | 10–50 launch validators |
-| 5.7 | Validator monitoring and alerting | Not started | Prometheus/Grafana dashboards |
-| 5.8 | Validator handbook | Not started | `docs/VALIDATORS.md` |
+| 5.7 | Validator monitoring and alerting | Partial | Basic systemd + journalctl guidance in handbook |
+| 5.8 | Validator handbook | Done | `docs/VALIDATORS.md` |
 | 5.9 | Staking CLI | Not started | Register validator, delegate stake |
 | 5.10 | Validator reward distribution | Not started | Automated payouts |
 

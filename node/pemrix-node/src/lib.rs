@@ -12,11 +12,13 @@
 pub mod config;
 pub mod error;
 pub mod genesis;
+pub mod keys;
 pub mod node;
 pub mod testnet;
 
 pub use config::NodeConfig;
 pub use error::NodeError;
 pub use genesis::GenesisConfig;
-pub use node::{init, keys, spawn_bft_validator, start, status, Node};
+pub use keys::{generate_and_save as generate_validator_key, ValidatorKeyFile};
+pub use node::{init, keys, spawn_bft_validator, start, start_validator, status, Node};
 pub use testnet::run_testnet;
