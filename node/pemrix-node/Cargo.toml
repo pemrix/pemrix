@@ -29,6 +29,7 @@ pemrix-faucet = { workspace = true }
 pemrix-explorer = { workspace = true }
 pemrix-webhooks = { workspace = true }
 pemrix-testnet = { workspace = true }
+pemrix-ports = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
@@ -39,8 +40,9 @@ hex = { workspace = true }
 anyhow = { workspace = true }
 
 [features]
-default = []
+default = ["rocksdb"]
 grpc = ["pemrix-rpc/grpc"]
+rocksdb = ["pemrix-storage/rocksdb"]
 
 [dev-dependencies]
 reqwest = { workspace = true }

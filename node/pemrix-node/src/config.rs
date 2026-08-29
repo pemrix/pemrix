@@ -35,8 +35,8 @@ impl Default for NodeConfig {
     fn default() -> Self {
         Self {
             data_dir: "./pemrix-data".to_string(),
-            rpc_listen: "127.0.0.1:60001".to_string(),
-            p2p_listen: "0.0.0.0:60303".to_string(),
+            rpc_listen: pemrix_ports::rpc_local(),
+            p2p_listen: pemrix_ports::p2p_default(),
             validator: false,
             bootstrap_nodes: BTreeMap::new(),
             validator_set: None,

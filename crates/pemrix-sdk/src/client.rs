@@ -69,7 +69,7 @@ pub struct HttpClient {
 impl HttpClient {
     /// Create a new HTTP client pointing at the given RPC base URL.
     ///
-    /// The URL should be the root of the RPC server, e.g. `http://127.0.0.1:60001`.
+    /// The URL should be the root of the RPC server, e.g. `http://127.0.0.1:61001`.
     pub fn new(base_url: impl Into<String>) -> Self {
         Self {
             base_url: base_url.into().trim_end_matches('/').to_string(),

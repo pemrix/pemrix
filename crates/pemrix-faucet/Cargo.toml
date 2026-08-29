@@ -19,6 +19,7 @@ pemrix-crypto = { workspace = true }
 pemrix-sdk = { workspace = true }
 pemrix-rpc = { workspace = true }
 pemrix-testnet = { workspace = true }
+pemrix-ports = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

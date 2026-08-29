@@ -1,0 +1,33 @@
+[Unit]
+Description=PEMRIX Private Testnet Validator
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=pemrix
+Group=pemrix
+WorkingDirectory=/var/lib/pemrix
+# TODO: evolve to `pemrix start --validator` once RPC/state are integrated
+# into the single-validator production path. For the private testnet phase
+# the testnet command runs validator + RPC + faucet + explorer + webhooks.
+ExecStart=/usr/local/bin/pemrix testnet --data-dir /var/lib/pemrix --validators 1
+Restart=always
+RestartSec=5
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/pemrix
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

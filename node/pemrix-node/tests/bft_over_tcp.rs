@@ -11,6 +11,7 @@
 use pemrix_consensus::{BftConsensus, ConsensusEngine, Validator, ValidatorSet, Vote};
 use pemrix_network::{Message, NetworkEvent, PeerId, TcpTransport, Transport};
 use pemrix_primitives::{Address, Hash};
+use pemrix_storage::InMemoryBackend;
 use std::collections::{BTreeMap, HashSet};
 use std::net::SocketAddr;
 use std::str::FromStr;
@@ -91,14 +92,19 @@ async fn four_validators_finalize_block_over_tcp() {
     let validator_set =
         ValidatorSet::from_validators(validators.iter().map(|a| Validator::new(*a, 1)).collect());
 
-    let ports: Vec<u16> = vec![60301, 60302, 60303, 60304];
+    let ports: Vec<u16> = vec![
+        pemrix_ports::P2P_BASE + 1,
+        pemrix_ports::P2P_BASE + 2,
+        pemrix_ports::P2P_BASE + 3,
+        pemrix_ports::P2P_BASE + 4,
+    ];
     let mut addrs: BTreeMap<Address, SocketAddr> = BTreeMap::new();
     for (addr, port) in validators.iter().zip(ports.iter()) {
         addrs.insert(*addr, socket_addr(*port));
     }
 
     let mut transports: Vec<TcpTransport> = Vec::new();
-    let mut consensus_engines: Vec<BftConsensus> = Vec::new();
+    let mut consensus_engines: Vec<BftConsensus<InMemoryBackend>> = Vec::new();
 
     for (i, validator_addr) in validators.iter().enumerate() {
         let local_port = ports[i];

@@ -2,9 +2,9 @@
 #
 # PEMRIX Validator Setup Script
 #
-# This script installs the PEMRIX validator node on a Linux server.
-# It builds the release binary, initializes a validator data directory,
-# and optionally creates a systemd service.
+# This script installs the PEMRIX validator node and supporting services on a
+# Linux server. It builds release binaries, initializes a validator data
+# directory, and installs systemd services.
 #
 # Usage:
 #   ./scripts/install-validator.sh [--data-dir /var/lib/pemrix] [--service]
@@ -13,6 +13,8 @@
 #   - Ubuntu 22.04 LTS or compatible Linux distribution
 #   - Root or sudo access (for system service)
 #   - Internet connection
+#
+# NOTE: This script does NOT use Docker. Services run as native systemd units.
 
 set -euo pipefail
 
@@ -21,6 +23,7 @@ INSTALL_SERVICE=false
 REPO_URL="https://github.com/pemrix/pemrix.git"
 INSTALL_DIR="/opt/pemrix"
 SERVICE_USER="pemrix"
+BIN_DIR="/usr/local/bin"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -60,6 +63,12 @@ check_requirements() {
     apt-get update && apt-get install -y git
   fi
 
+  # Build dependencies for RocksDB.
+  if ! command -v clang &>/dev/null && ! command -v gcc &>/dev/null; then
+    log "Installing build dependencies..."
+    apt-get update && apt-get install -y build-essential clang pkg-config libssl-dev
+  fi
+
   if ! command -v cargo &>/dev/null; then
     log "Rust not found. Installing Rust via rustup..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -68,7 +77,7 @@ check_requirements() {
 }
 
 build_pemrix() {
-  log "Building PEMRIX release binary..."
+  log "Building PEMRIX release binaries..."
   if [[ -d "$INSTALL_DIR" ]]; then
     log "Updating existing installation at $INSTALL_DIR"
     cd "$INSTALL_DIR"
@@ -80,55 +89,52 @@ build_pemrix() {
   fi
 
   cargo build --release
-  log "Build complete: $INSTALL_DIR/target/release/pemrix"
+  log "Build complete."
+}
+
+install_binaries() {
+  log "Installing binaries to $BIN_DIR..."
+  cp -f "$INSTALL_DIR/target/release/pemrix" "$BIN_DIR/pemrix"
+  cp -f "$INSTALL_DIR/target/release/pemrix-node" "$BIN_DIR/pemrix-node"
+  cp -f "$INSTALL_DIR/target/release/pemrix-explorer" "$BIN_DIR/pemrix-explorer"
+  cp -f "$INSTALL_DIR/target/release/pemrix-faucet" "$BIN_DIR/pemrix-faucet"
+  cp -f "$INSTALL_DIR/target/release/pemrix-webhook-worker" "$BIN_DIR/pemrix-webhook-worker"
+  chmod +x "$BIN_DIR"/pemrix*
+}
+
+create_user() {
+  if ! id "$SERVICE_USER" &>/dev/null; then
+    log "Creating system user $SERVICE_USER..."
+    useradd --system --no-create-home --home-dir "$DATA_DIR" "$SERVICE_USER"
+  fi
 }
 
 initialize_validator() {
   log "Initializing validator data directory at $DATA_DIR..."
   mkdir -p "$DATA_DIR"
-  "$INSTALL_DIR/target/release/pemrix" init --validator --data-dir "$DATA_DIR"
+  "$BIN_DIR/pemrix" init --validator --data-dir "$DATA_DIR"
 
   log "Setting permissions..."
-  if id "$SERVICE_USER" &>/dev/null; then
-    chown -R "$SERVICE_USER:$SERVICE_USER" "$DATA_DIR"
-  else
-    log "Warning: user $SERVICE_USER does not exist. Skipping ownership change."
-  fi
+  chown -R "$SERVICE_USER:$SERVICE_USER" "$DATA_DIR"
+  chmod 700 "$DATA_DIR"
 }
 
-install_systemd_service() {
-  log "Creating systemd service..."
+install_systemd_services() {
+  log "Installing systemd services..."
+  create_user
 
-  if ! id "$SERVICE_USER" &>/dev/null; then
-    useradd --system --no-create-home --home-dir "$DATA_DIR" "$SERVICE_USER"
+  cp -f "$INSTALL_DIR/systemd/pemrix-validator.service" /etc/systemd/system/pemrix-validator.service
+  cp -f "$INSTALL_DIR/systemd/pemrix-explorer.service" /etc/systemd/system/pemrix-explorer.service
+  cp -f "$INSTALL_DIR/systemd/pemrix-faucet.service" /etc/systemd/system/pemrix-faucet.service
+  cp -f "$INSTALL_DIR/systemd/pemrix-webhooks.service" /etc/systemd/system/pemrix-webhooks.service
+
+  # Replace placeholders in case a non-default data dir was chosen.
+  if [[ "$DATA_DIR" != "/var/lib/pemrix" ]]; then
+    sed -i "s|/var/lib/pemrix|$DATA_DIR|g" /etc/systemd/system/pemrix-*.service
   fi
 
-  cat > /etc/systemd/system/pemrix-validator.service <<EOF
-[Unit]
-Description=PEMRIX Validator Node
-After=network.target
-
-[Service]
-Type=simple
-User=$SERVICE_USER
-Group=$SERVICE_USER
-WorkingDirectory=$DATA_DIR
-ExecStart=$INSTALL_DIR/target/release/pemrix start --validator --data-dir $DATA_DIR
-Restart=always
-RestartSec=5
-
-# Security hardening
-NoNewPrivileges=true
-ProtectSystem=strict
-ProtectHome=true
-ReadWritePaths=$DATA_DIR
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
   systemctl daemon-reload
-  log "Systemd service installed. Enable with: systemctl enable --now pemrix-validator"
+  log "Systemd services installed."
 }
 
 print_summary() {
@@ -136,7 +142,7 @@ print_summary() {
   echo "=========================================="
   echo " PEMRIX Validator Setup Complete"
   echo "=========================================="
-  echo "Binary:     $INSTALL_DIR/target/release/pemrix"
+  echo "Binaries:   $BIN_DIR/pemrix*"
   echo "Data dir:   $DATA_DIR"
   echo "Key file:   $DATA_DIR/validator_key.json"
   echo
@@ -147,22 +153,26 @@ print_summary() {
   echo "  4. Start the validator:"
   if [[ "$INSTALL_SERVICE" == "true" ]]; then
     echo "     systemctl enable --now pemrix-validator"
+    echo "     systemctl enable --now pemrix-explorer"
+    echo "     systemctl enable --now pemrix-faucet"
+    echo "     systemctl enable --now pemrix-webhooks"
     echo "     journalctl -u pemrix-validator -f"
   else
-    echo "     $INSTALL_DIR/target/release/pemrix start --validator --data-dir $DATA_DIR"
+    echo "     $BIN_DIR/pemrix start --validator --data-dir $DATA_DIR"
   fi
   echo
   echo "Validator address:"
-  cat "$DATA_DIR/validator_key.json" | grep '"address"' | sed 's/.*: "\(.*\)",/\1/'
+  grep '"address"' "$DATA_DIR/validator_key.json" | sed 's/.*: "\(.*\)",/\1/'
   echo "=========================================="
 }
 
 main() {
   check_requirements
   build_pemrix
+  install_binaries
   initialize_validator
   if [[ "$INSTALL_SERVICE" == "true" ]]; then
-    install_systemd_service
+    install_systemd_services
   fi
   print_summary
 }

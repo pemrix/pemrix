@@ -88,11 +88,11 @@ impl TestnetConfig {
             allocations,
             faucet_accounts: vec![(faucet_address, faucet_account)],
             validators: vec![faucet_address],
-            bootstrap_nodes: vec![format!("{}:60303", bind_host)],
-            rpc_listen: format!("{}:60001", bind_host),
-            faucet_listen: format!("{}:60101", bind_host),
-            explorer_listen: format!("{}:60102", bind_host),
-            grpc_listen: format!("{}:60002", bind_host),
+            bootstrap_nodes: vec![format!("{}:{}", bind_host, pemrix_ports::P2P_BASE + 3)],
+            rpc_listen: format!("{}:{}", bind_host, pemrix_ports::RPC),
+            faucet_listen: format!("{}:{}", bind_host, pemrix_ports::FAUCET),
+            explorer_listen: format!("{}:{}", bind_host, pemrix_ports::EXPLORER),
+            grpc_listen: format!("{}:{}", bind_host, pemrix_ports::GRPC),
         }
     }
 
@@ -105,7 +105,7 @@ impl TestnetConfig {
             .rpc_listen
             .rsplit_once(':')
             .map(|(_, p)| p)
-            .unwrap_or("60001");
+            .unwrap_or("61001");
         format!("http://127.0.0.1:{}", port)
     }
 

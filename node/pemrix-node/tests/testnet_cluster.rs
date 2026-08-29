@@ -30,7 +30,7 @@ async fn four_validator_testnet_produces_blocks() {
     for _ in 0..60 {
         tokio::time::sleep(Duration::from_millis(500)).await;
 
-        match reqwest::get("http://127.0.0.1:60001/v1/status").await {
+        match reqwest::get("http://127.0.0.1:61001/v1/status").await {
             Ok(response) => {
                 if let Ok(body) = response.json::<serde_json::Value>().await {
                     if let Some(height) = body.get("height").and_then(|v| v.as_u64()) {

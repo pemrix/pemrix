@@ -9,6 +9,7 @@ members = [
     "crates/pemrix-vm",
     "crates/pemrix-sdk",
     "crates/pemrix-cli",
+    "crates/pemrix-ports",
     "crates/pemrix-testnet",
     "crates/pemrix-faucet",
     "crates/pemrix-explorer",
@@ -21,7 +22,7 @@ resolver = "2"
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-authors = ["Quanvio Labs <hello@quanvio.com>"]
+authors = ["PEMRIX Labs <hello@pemrix.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/pemrix/pemrix"
 homepage = "https://pemrix.com"
@@ -41,6 +42,7 @@ pemrix-faucet = { path = "crates/pemrix-faucet" }
 pemrix-explorer = { path = "crates/pemrix-explorer" }
 pemrix-webhooks = { path = "crates/pemrix-webhooks" }
 pemrix-sandbox = { path = "crates/pemrix-sandbox" }
+pemrix-ports = { path = "crates/pemrix-ports" }
 
 thiserror = "1.0"
 serde = { version = "1.0", features = ["derive"] }

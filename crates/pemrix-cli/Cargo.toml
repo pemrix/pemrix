@@ -19,6 +19,7 @@ pemrix-sdk = { workspace = true }
 pemrix-primitives = { workspace = true }
 pemrix-crypto = { workspace = true }
 pemrix-testnet = { workspace = true }
+pemrix-ports = { workspace = true }
 clap = { workspace = true }
 anyhow = { workspace = true }
 tokio = { workspace = true }
@@ -26,5 +27,6 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 
 [features]
-default = []
+default = ["rocksdb"]
 grpc = ["pemrix-node/grpc"]
+rocksdb = ["pemrix-node/rocksdb"]

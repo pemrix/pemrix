@@ -12,6 +12,7 @@ description = "PEMRIX testnet configuration and bootstrap utilities."
 [dependencies]
 pemrix-primitives = { workspace = true }
 pemrix-crypto = { workspace = true }
+pemrix-ports = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

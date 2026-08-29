@@ -60,10 +60,10 @@ enum Commands {
     /// Run a wallet-to-merchant QR payment demo against a local testnet.
     Demo {
         /// RPC server URL.
-        #[arg(short, long, default_value = "http://127.0.0.1:60001")]
+        #[arg(short, long, default_value = "http://127.0.0.1:61001")]
         rpc_url: String,
         /// Faucet server URL.
-        #[arg(short, long, default_value = "http://127.0.0.1:60101")]
+        #[arg(short, long, default_value = "http://127.0.0.1:61003")]
         faucet_url: String,
     },
 }

@@ -75,9 +75,9 @@ impl GenesisConfig {
         for (address, account) in &self.allocations {
             state
                 .set_account(address, *account)
-                .map_err(|_| crate::NodeError::Storage)?;
+                .map_err(crate::NodeError::Storage)?;
         }
-        let state_root = state.state_root().map_err(|_| crate::NodeError::Storage)?;
+        let state_root = state.state_root().map_err(crate::NodeError::Storage)?;
         let proposer = self.validators.first().copied().unwrap_or_default();
 
         let header = BlockHeader {

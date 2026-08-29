@@ -7,8 +7,8 @@ pub enum NodeError {
     #[error("configuration error: {0}")]
     Config(String),
     /// Storage error.
-    #[error("storage error")]
-    Storage,
+    #[error("storage error: {0}")]
+    Storage(#[from] pemrix_storage::StorageError),
     /// Consensus error.
     #[error("consensus error")]
     Consensus,

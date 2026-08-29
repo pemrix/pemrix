@@ -21,12 +21,12 @@ fn bft_node_config_round_trip() {
 
     let peer = PeerId::from_public_key_hash(Hash::hash_bytes(b"peer"));
     let mut bootstrap = BTreeMap::new();
-    bootstrap.insert(peer, SocketAddr::from_str("127.0.0.1:60303").unwrap());
+    bootstrap.insert(peer, SocketAddr::from_str(&pemrix_ports::p2p_local_offset(3)).unwrap());
 
     let config = NodeConfig {
         data_dir: "./test-data".to_string(),
-        rpc_listen: "127.0.0.1:60001".to_string(),
-        p2p_listen: "0.0.0.0:60303".to_string(),
+        rpc_listen: pemrix_ports::rpc_local(),
+        p2p_listen: pemrix_ports::p2p_default(),
         validator: true,
         bootstrap_nodes: bootstrap.clone(),
         validator_set: Some(validator_set.clone()),

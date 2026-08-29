@@ -20,11 +20,11 @@ pub struct FaucetConfig {
 impl Default for FaucetConfig {
     fn default() -> Self {
         Self {
-            listen: "127.0.0.1:60101".to_string(),
+            listen: pemrix_ports::faucet_local(),
             faucet_address: "px".to_string(),
             max_amount: 10_000,
             cooldown_seconds: 60,
-            rpc_url: "http://127.0.0.1:60001".to_string(),
+            rpc_url: pemrix_ports::rpc_internal_url(),
         }
     }
 }

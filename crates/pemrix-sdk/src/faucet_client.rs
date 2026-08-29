@@ -72,11 +72,11 @@ mod tests {
 
     #[tokio::test]
     async fn faucet_request_url_is_formatted() {
-        let client = FaucetClient::new("http://localhost:60101");
-        assert_eq!(client.base_url, "http://localhost:60101");
+        let client = FaucetClient::new("http://localhost:61003");
+        assert_eq!(client.base_url, "http://localhost:61003");
         assert_eq!(
             format!("{}/faucet/request", client.base_url),
-            "http://localhost:60101/faucet/request"
+            "http://localhost:61003/faucet/request"
         );
     }
 }

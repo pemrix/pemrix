@@ -13,7 +13,7 @@
 
 use crate::{ConsensusEngine, ConsensusError, Finality, Proposal, ValidatorSet, Vote};
 use pemrix_primitives::{Address, Block, BlockBody, BlockHeader, Hash, Transaction};
-use pemrix_storage::{InMemoryBackend, StateStore};
+use pemrix_storage::{InMemoryBackend, StateBackend, StateStore};
 use pemrix_vm::{NativeExecutor, Vm};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -30,14 +30,14 @@ struct RoundState {
     finalized: bool,
 }
 
-/// Multi-validator BFT consensus engine.
-pub struct BftConsensus {
+/// Multi-validator BFT consensus engine backed by a `StateBackend`.
+pub struct BftConsensus<B: StateBackend> {
     /// Local validator address.
     local_address: Address,
     /// Current validator committee.
     validator_set: ValidatorSet,
-    /// In-memory state store.
-    state: StateStore<InMemoryBackend>,
+    /// State store.
+    state: StateStore<B>,
     /// Current chain height.
     height: u64,
     /// Previous block hash.
@@ -50,16 +50,33 @@ pub struct BftConsensus {
     voted_this_height: BTreeSet<Address>,
 }
 
-impl BftConsensus {
-    /// Create a new BFT consensus engine for the local validator.
+impl BftConsensus<InMemoryBackend> {
+    /// Create a new in-memory BFT consensus engine for the local validator.
     pub fn new(local_address: Address, validator_set: ValidatorSet) -> Self {
         Self::new_with_previous_hash(local_address, validator_set, Hash::default())
     }
 
-    /// Create a new BFT consensus engine with a specific previous block hash.
+    /// Create a new in-memory BFT consensus engine with a specific previous block hash.
     pub fn new_with_previous_hash(
         local_address: Address,
         validator_set: ValidatorSet,
+        previous_hash: Hash,
+    ) -> Self {
+        Self::new_with_store(
+            local_address,
+            validator_set,
+            StateStore::new_in_memory(),
+            previous_hash,
+        )
+    }
+}
+
+impl<B: StateBackend> BftConsensus<B> {
+    /// Create a new BFT consensus engine with the provided state store.
+    pub fn new_with_store(
+        local_address: Address,
+        validator_set: ValidatorSet,
+        state: StateStore<B>,
         previous_hash: Hash,
     ) -> Self {
         assert!(
@@ -69,7 +86,7 @@ impl BftConsensus {
         Self {
             local_address,
             validator_set,
-            state: StateStore::new_in_memory(),
+            state,
             height: 0,
             previous_hash,
             rounds: BTreeMap::new(),
@@ -79,12 +96,12 @@ impl BftConsensus {
     }
 
     /// Access the internal state store.
-    pub fn state(&self) -> &StateStore<InMemoryBackend> {
+    pub fn state(&self) -> &StateStore<B> {
         &self.state
     }
 
     /// Access the internal state store mutably.
-    pub fn state_mut(&mut self) -> &mut StateStore<InMemoryBackend> {
+    pub fn state_mut(&mut self) -> &mut StateStore<B> {
         &mut self.state
     }
 
@@ -280,7 +297,7 @@ impl BftConsensus {
 }
 
 #[async_trait::async_trait]
-impl ConsensusEngine for BftConsensus {
+impl<B: StateBackend> ConsensusEngine for BftConsensus<B> {
     async fn propose(
         &mut self,
         height: u64,

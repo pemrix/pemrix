@@ -4,10 +4,36 @@ use crate::{GenesisConfig, NodeConfig, NodeError};
 use pemrix_consensus::{BftConsensus, ConsensusEngine, SimpleMempool, SoloConsensus, Vote};
 use pemrix_network::{Message, MockTransport, NetworkEvent, PeerId, TcpTransport, Transport};
 use pemrix_primitives::{Address, Block, Hash};
+#[cfg(not(feature = "rocksdb"))]
+use pemrix_storage::InMemoryBackend;
+use pemrix_storage::StateStore;
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
 use tracing::{info, warn};
+
+/// The consensus backend type selected at compile time.
+#[cfg(feature = "rocksdb")]
+type Backend = pemrix_storage::RocksDbBackend;
+#[cfg(not(feature = "rocksdb"))]
+type Backend = InMemoryBackend;
+
+/// The concrete BFT consensus type for this build.
+type Consensus = BftConsensus<Backend>;
+
+/// Open the state store for the node data directory.
+#[cfg(feature = "rocksdb")]
+fn open_state_store(data_dir: &str) -> Result<StateStore<Backend>, NodeError> {
+    let path = std::path::Path::new(data_dir).join("state");
+    std::fs::create_dir_all(&path)?;
+    let backend = pemrix_storage::RocksDbBackend::open(path)?;
+    Ok(StateStore::new(backend))
+}
+
+#[cfg(not(feature = "rocksdb"))]
+fn open_state_store(_data_dir: &str) -> StateStore<Backend> {
+    StateStore::new_in_memory()
+}
 
 /// A running PEMRIX node.
 pub struct Node {
@@ -82,7 +108,7 @@ async fn start_solo(_config: NodeConfig, genesis: GenesisConfig) -> Result<(), N
         consensus
             .state_mut()
             .set_account(address, *account)
-            .map_err(|_| NodeError::Storage)?;
+            .map_err(NodeError::Storage)?;
     }
 
     let _mempool = SimpleMempool::new();
@@ -153,14 +179,19 @@ async fn run_bft_validator(
         .await
         .map_err(|_| NodeError::Network)?;
 
+    #[cfg(feature = "rocksdb")]
+    let state_store = open_state_store(&config.data_dir)?;
+    #[cfg(not(feature = "rocksdb"))]
+    let state_store = open_state_store(&config.data_dir);
+
     let mut consensus =
-        BftConsensus::new_with_previous_hash(local_address, validator_set.clone(), genesis_hash);
+        Consensus::new_with_store(local_address, validator_set.clone(), state_store, genesis_hash);
     // Seed consensus state with genesis allocations.
     for (address, account) in &genesis.allocations {
         consensus
             .state_mut()
             .set_account(address, *account)
-            .map_err(|_| NodeError::Storage)?;
+            .map_err(NodeError::Storage)?;
     }
 
     let consensus = Arc::new(Mutex::new(consensus));
@@ -237,7 +268,7 @@ async fn run_bft_validator(
 
 /// Process incoming network events and feed them to the consensus engine.
 async fn run_network_event_loop(
-    consensus: Arc<Mutex<BftConsensus>>,
+    consensus: Arc<Mutex<Consensus>>,
     transport: Arc<Mutex<TcpTransport>>,
     finalized_tx: mpsc::UnboundedSender<Block>,
 ) {

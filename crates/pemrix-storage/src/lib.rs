@@ -11,5 +11,7 @@ pub mod error;
 pub mod state;
 
 pub use backend::{InMemoryBackend, StateBackend};
+#[cfg(feature = "rocksdb")]
+pub use backend::RocksDbBackend;
 pub use error::StorageError;
 pub use state::{AccountState, StateRoot, StateStore};

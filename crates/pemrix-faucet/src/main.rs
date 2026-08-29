@@ -11,7 +11,10 @@ use tracing::info;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
-    let config = FaucetConfig::default();
+    let mut config = FaucetConfig::default();
+    if let Ok(listen) = std::env::var("FAUCET_LISTEN") {
+        config.listen = listen;
+    }
     let faucet_address = Address::from_str(&config.faucet_address).unwrap_or_default();
     let state = RpcState::new();
     let submitter = Arc::new(LocalSubmitter::new(state, faucet_address));

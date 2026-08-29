@@ -16,6 +16,7 @@ path = "src/main.rs"
 [dependencies]
 pemrix-primitives = { workspace = true }
 pemrix-rpc = { workspace = true }
+pemrix-ports = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

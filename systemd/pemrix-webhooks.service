@@ -1,0 +1,27 @@
+[Unit]
+Description=PEMRIX Webhook Worker
+After=network.target pemrix-validator.service
+Wants=pemrix-validator.service
+
+[Service]
+Type=simple
+User=pemrix
+Group=pemrix
+WorkingDirectory=/var/lib/pemrix
+Environment="WEBHOOK_LISTEN=127.0.0.1:61005"
+ExecStart=/usr/local/bin/pemrix-webhook-worker
+Restart=always
+RestartSec=5
+
+# Resource limits
+LimitNOFILE=65536
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/pemrix
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

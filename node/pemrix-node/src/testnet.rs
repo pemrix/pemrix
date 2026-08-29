@@ -46,7 +46,7 @@ async fn run_solo_testnet(data_dir: &str) -> Result<(), NodeError> {
     let node_config = NodeConfig {
         data_dir: data_dir.to_string(),
         rpc_listen: testnet.rpc_listen.clone(),
-        p2p_listen: "0.0.0.0:60303".to_string(),
+        p2p_listen: pemrix_ports::p2p_default(),
         validator: true,
         bootstrap_nodes: BTreeMap::new(),
         validator_set: None,
@@ -72,7 +72,7 @@ async fn run_solo_testnet(data_dir: &str) -> Result<(), NodeError> {
 
     let rpc_state = RpcState::new();
     let explorer = ExplorerService::new(&testnet.explorer_listen);
-    let webhooks = WebhookService::new("127.0.0.1:60103");
+    let webhooks = WebhookService::new(&pemrix_ports::webhooks_local());
 
     // Store genesis block and seed RPC state and explorer with allocations.
     rpc_state.store_block(genesis_block.clone()).await;
@@ -107,7 +107,7 @@ async fn run_solo_testnet(data_dir: &str) -> Result<(), NodeError> {
         consensus
             .state_mut()
             .set_account(address, *account)
-            .map_err(|_| NodeError::Storage)?;
+            .map_err(NodeError::Storage)?;
     }
 
     for height in 1..=100_000u64 {
@@ -183,7 +183,7 @@ async fn run_bft_testnet(data_dir: &str, validator_count: usize) -> Result<(), N
 
     let rpc_state = RpcState::new();
     let explorer = ExplorerService::new(&testnet.explorer_listen);
-    let webhooks = WebhookService::new("127.0.0.1:60103");
+    let webhooks = WebhookService::new(&pemrix_ports::webhooks_local());
 
     rpc_state.store_block(genesis_block.clone()).await;
     explorer.state().ingest_block(genesis_block).await;
@@ -201,7 +201,7 @@ async fn run_bft_testnet(data_dir: &str, validator_count: usize) -> Result<(), N
     .await?;
 
     // Build per-validator configs and bootstrap map.
-    let p2p_base = 60300u16;
+    let p2p_base = pemrix_ports::P2P_BASE;
     let mut validator_addrs: BTreeMap<Address, SocketAddr> = BTreeMap::new();
     for (i, address) in validator_addresses.iter().enumerate() {
         let port = p2p_base + i as u16;
