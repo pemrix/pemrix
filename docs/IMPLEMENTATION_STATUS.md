@@ -57,7 +57,7 @@
 | Feature | Docs Claim | Code Location | Status | Notes |
 |---|---|---|---|---|
 | Native transfers | `docs/ARCHITECTURE.md` | `crates/pemrix-vm/src/native.rs` | Implemented | PEMRIX-to-PEMRIX transfers execute in consensus. |
-| WASM VM | `docs/ARCHITECTURE.md`, `docs/PEMRIX_VS_MARKET.md` | `crates/pemrix-vm/src/wasm.rs` | Partial | Stub/no-op WASM executor. Smart contracts are not deployable yet. |
+| WASM VM | `docs/ARCHITECTURE.md`, `docs/PEMRIX_VS_MARKET.md` | `crates/pemrix-vm/src/wasm.rs` | Partial | wasmtime-based runner behind `wasm` feature. Runs simple contracts; no storage host functions yet. |
 | Gas metering | `docs/ARCHITECTURE.md` | `crates/pemrix-vm/src/gas.rs` | Partial | Skeleton exists; not enforced on main path. |
 
 ## Services
@@ -69,7 +69,7 @@
 | Webhooks | `docs/ARCHITECTURE.md` | `crates/pemrix-webhooks/` | Implemented | Block and transaction event triggers. |
 | Shared services process | `docs/ARCHITECTURE.md` | `node/pemrix-node/src/services.rs` | Implemented | Runs faucet, explorer, webhooks, services RPC proxy. |
 | Services RPC height sync | `docs/ARCHITECTURE.md` | `node/pemrix-node/src/services.rs` | Implemented | Polls validator raw block endpoint and updates proxy height. |
-| Account balance sync in services | — | `node/pemrix-node/src/services.rs` | Partial | Only faucet account is seeded; real account balances are not replayed from blocks. |
+| Account balance sync in services | — | `node/pemrix-node/src/services.rs` | Implemented | Genesis allocations seeded; block transactions replayed into RpcState. |
 
 ## SDKs & Tooling
 
@@ -87,16 +87,18 @@
 |---|---|---|---|---|
 | Genesis allocation | `docs/ARCHITECTURE.md` | `node/pemrix-node/src/genesis.rs` | Implemented | Genesis block builder with allocations. |
 | Issuance schedule | `docs/ARCHITECTURE.md`, `docs/VALIDATORS.md` | `crates/pemrix-primitives/src/tokenomics.rs` | Implemented | Bounded decaying rewards. |
-| Transaction fee burn | `docs/ARCHITECTURE.md` | — | Planned | Design only; not yet implemented in execution. |
-| Staking / delegation | `docs/ARCHITECTURE.md`, `docs/VALIDATORS.md` | — | Planned | Design only; validator rewards are not yet tied to stake. |
-| Slashing / jailing | `docs/VALIDATORS.md` | — | Planned | Design only; not yet implemented. |
+| Transaction fee burn | `docs/ARCHITECTURE.md` | `crates/pemrix-vm/src/native.rs` | Implemented | Fee is deducted from sender and not credited anywhere (burned). |
+| Block reward distribution | `docs/ARCHITECTURE.md` | `crates/pemrix-consensus/src/rewards.rs` | Implemented | Proposer bonus + commission-aware payout calculation. Not yet wired into block finalization. |
+| Staking types | `docs/ARCHITECTURE.md`, `docs/VALIDATORS.md` | `crates/pemrix-primitives/src/staking.rs` | Implemented | ValidatorRecord, Delegation, ValidatorStatus. |
+| Staking state machine | `docs/ARCHITECTURE.md`, `docs/VALIDATORS.md` | — | Planned | Register/delegate/undelegate transactions not yet implemented. |
+| Slashing / jailing | `docs/VALIDATORS.md` | `crates/pemrix-consensus/src/slashing.rs` | Implemented | Misbehavior evidence, slash rates, jail durations, release logic. |
 
 ## Governance
 
 | Feature | Docs Claim | Code Location | Status | Notes |
 |---|---|---|---|---|
 | On-chain governance | `docs/ARCHITECTURE.md`, `docs/VALIDATORS.md` | — | Planned | Design only. |
-| Protocol constitution | `docs/ARCHITECTURE.md` | — | Not Started | Future document. |
+| Protocol constitution | `docs/ARCHITECTURE.md` | `private/PEMRIX_CONSTITUTION_AND_TOKENOMICS.md` | In Progress | Internal draft exists; not ratified. |
 | Validator voting | `docs/ARCHITECTURE.md` | — | Planned | Design only. |
 
 ## Payments & Consumer Products
@@ -132,13 +134,13 @@
 
 ## Biggest Gaps to Close Before Mainnet
 
-1. **Staking, delegation, and validator economics** — currently design-only.
-2. **Slashing / jailing** — design-only; needed for permissionless validator security.
-3. **WASM smart contract execution** — currently a stub.
-4. **Account balance sync in services proxy** — only faucet account is tracked.
-5. **Fiat on/off-ramp partnerships** — not a code problem; requires legal/commercial work.
-6. **External security audits** — required before real value enters.
-7. **Consumer wallet and merchant payment products** — not started.
+1. **Staking state machine** — register/delegate/undelegate transactions and on-chain validator set updates.
+2. **Block reward wiring** — calculate and apply rewards during block finalization.
+3. **WASM host functions** — let contracts read/write state and call other contracts.
+4. **Fiat on/off-ramp partnerships** — not a code problem; requires legal/commercial work.
+5. **External security audits** — required before real value enters.
+6. **Consumer wallet and merchant payment products** — not started.
+7. **Governance module** — on-chain proposals and voting.
 
 ---
 
@@ -147,3 +149,4 @@
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-08-30 | Kimi Code / Quanvio Labs | Initial implementation-status audit |
+| 1.1 | 2026-08-30 | Kimi Code / Quanvio Labs | Updated after staking, rewards, slashing, WASM, and services sync work |
