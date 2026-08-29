@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-release:
+    name: Build Release Binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang pkg-config libssl-dev
+      - name: Build release binaries
+        run: cargo build --release
+      - name: Package binaries
+        run: |
+          mkdir -p pemrix-linux-x86_64
+          cp target/release/pemrix pemrix-linux-x86_64/
+          cp target/release/pemrix-node pemrix-linux-x86_64/
+          cp target/release/pemrix-explorer pemrix-linux-x86_64/
+          cp target/release/pemrix-faucet pemrix-linux-x86_64/
+          cp target/release/pemrix-webhook-worker pemrix-linux-x86_64/
+          tar -czf pemrix-linux-x86_64.tar.gz pemrix-linux-x86_64
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pemrix-linux-x86_64.tar.gz
+          generate_release_notes: true
