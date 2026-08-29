@@ -13,6 +13,7 @@ description = "RPC gateway for PEMRIX nodes: gRPC and JSON-RPC interfaces."
 pemrix-primitives = { workspace = true }
 pemrix-consensus = { workspace = true }
 pemrix-storage = { workspace = true }
+pemrix-crypto = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
