@@ -1,0 +1,21 @@
+[Unit]
+Description=PEMRIX Marketing Site
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/pemrix/pemrix-marketing
+ExecStart=/usr/bin/pnpm start
+Restart=always
+RestartSec=5
+Environment="PORT=3000"
+Environment="NODE_ENV=production"
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target

@@ -12,6 +12,7 @@
 #   PEMRIX_DATA_DIR     Data directory (default: /var/lib/pemrix)
 #   PEMRIX_SOURCE_DIR   Local source directory to build from (default: /opt/pemrix)
 #   INSTALL_SERVICE     Set to "true" to install systemd services (default: true)
+#   PEMRIX_BOOTSTRAP    Comma-separated bootstrap peers in <peer_id>@<host:port> form
 
 set -euo pipefail
 
@@ -19,8 +20,7 @@ PEMRIX_DOMAIN="${PEMRIX_DOMAIN:-pemrix.com}"
 PEMRIX_DATA_DIR="${PEMRIX_DATA_DIR:-/var/lib/pemrix}"
 PEMRIX_SOURCE_DIR="${PEMRIX_SOURCE_DIR:-/opt/pemrix}"
 INSTALL_SERVICE="${INSTALL_SERVICE:-true}"
-# In testnet mode the validator command also runs RPC, faucet, explorer and webhooks.
-PEMRIX_TESTNET_MODE="${PEMRIX_TESTNET_MODE:-true}"
+PEMRIX_BOOTSTRAP="${PEMRIX_BOOTSTRAP:-}"
 SERVICE_USER="pemrix"
 BIN_DIR="/usr/local/bin"
 
@@ -30,7 +30,7 @@ echo "Domain:        $PEMRIX_DOMAIN"
 echo "Data dir:      $PEMRIX_DATA_DIR"
 echo "Source dir:    $PEMRIX_SOURCE_DIR"
 echo "Install service: $INSTALL_SERVICE"
-echo "Testnet mode:  $PEMRIX_TESTNET_MODE"
+echo "Bootstrap:     $PEMRIX_BOOTSTRAP"
 echo "=========================================="
 
 export DEBIAN_FRONTEND=noninteractive
@@ -77,11 +77,29 @@ cp -f "$PEMRIX_SOURCE_DIR/target/release/pemrix-faucet" "$BIN_DIR/pemrix-faucet"
 cp -f "$PEMRIX_SOURCE_DIR/target/release/pemrix-webhook-worker" "$BIN_DIR/pemrix-webhook-worker"
 chmod +x "$BIN_DIR"/pemrix*
 
-# Initialize validator data directory
+# Initialize validator data directory if empty
 mkdir -p "$PEMRIX_DATA_DIR"
 if [[ ! -f "$PEMRIX_DATA_DIR/validator_key.json" ]]; then
     echo "Initializing PEMRIX validator..."
     "$BIN_DIR/pemrix" init --validator --data-dir "$PEMRIX_DATA_DIR"
+fi
+
+# Apply bootstrap peers if provided
+if [[ -n "$PEMRIX_BOOTSTRAP" ]]; then
+    echo "Configuring bootstrap peers: $PEMRIX_BOOTSTRAP"
+    python3 - "$PEMRIX_DATA_DIR" "$PEMRIX_BOOTSTRAP" <<'PY'
+import json, sys
+data_dir, bootstrap_str = sys.argv[1], sys.argv[2]
+node_path = f"{data_dir}/node.json"
+with open(node_path) as f:
+    config = json.load(f)
+config["bootstrap_nodes"] = {}
+for entry in bootstrap_str.split(","):
+    peer_id, addr = entry.strip().split("@", 1)
+    config["bootstrap_nodes"][peer_id] = addr
+with open(node_path, "w") as f:
+    json.dump(config, f, indent=2)
+PY
 fi
 
 chown -R "$SERVICE_USER:$SERVICE_USER" "$PEMRIX_DATA_DIR"
@@ -91,12 +109,7 @@ chmod 700 "$PEMRIX_DATA_DIR"
 if [[ "$INSTALL_SERVICE" == "true" ]]; then
     echo "Installing systemd services..."
     cp -f "$PEMRIX_SOURCE_DIR/systemd/pemrix-validator.service" /etc/systemd/system/pemrix-validator.service
-
-    if [[ "$PEMRIX_TESTNET_MODE" != "true" ]]; then
-        cp -f "$PEMRIX_SOURCE_DIR/systemd/pemrix-explorer.service" /etc/systemd/system/pemrix-explorer.service
-        cp -f "$PEMRIX_SOURCE_DIR/systemd/pemrix-faucet.service" /etc/systemd/system/pemrix-faucet.service
-        cp -f "$PEMRIX_SOURCE_DIR/systemd/pemrix-webhooks.service" /etc/systemd/system/pemrix-webhooks.service
-    fi
+    cp -f "$PEMRIX_SOURCE_DIR/systemd/pemrix-services.service" /etc/systemd/system/pemrix-services.service
 
     if [[ "$PEMRIX_DATA_DIR" != "/var/lib/pemrix" ]]; then
         sed -i "s|/var/lib/pemrix|$PEMRIX_DATA_DIR|g" /etc/systemd/system/pemrix-*.service
@@ -104,12 +117,7 @@ if [[ "$INSTALL_SERVICE" == "true" ]]; then
 
     systemctl daemon-reload
     systemctl enable --now pemrix-validator
-
-    if [[ "$PEMRIX_TESTNET_MODE" != "true" ]]; then
-        systemctl enable --now pemrix-explorer
-        systemctl enable --now pemrix-faucet
-        systemctl enable --now pemrix-webhooks
-    fi
+    systemctl enable --now pemrix-services
 fi
 
 # Install NGINX config
@@ -128,5 +136,5 @@ echo "PEMRIX Server Setup Complete"
 echo "=========================================="
 echo "Validator address:"
 grep '"address"' "$PEMRIX_DATA_DIR/validator_key.json" | sed 's/.*: "\(.*\)",/\1/'
-echo "Services: pemrix-validator, pemrix-explorer, pemrix-faucet, pemrix-webhooks"
+echo "Services: pemrix-validator, pemrix-services"
 echo "=========================================="

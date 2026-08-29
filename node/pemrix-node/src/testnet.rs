@@ -201,6 +201,10 @@ async fn run_bft_testnet(data_dir: &str, validator_count: usize) -> Result<(), N
     .await?;
 
     // Build per-validator configs and bootstrap map.
+    // Use a unidirectional chain to avoid simultaneous-dial races in the TCP
+    // transport: validator 0 listens, validator 1 dials validator 0, validator 2
+    // dials validator 1, and so on. The result is a connected topology that
+    // proves BFT consensus without requiring a full connection manager.
     let p2p_base = pemrix_ports::P2P_BASE;
     let mut validator_addrs: BTreeMap<Address, SocketAddr> = BTreeMap::new();
     for (i, address) in validator_addresses.iter().enumerate() {
@@ -218,20 +222,14 @@ async fn run_bft_testnet(data_dir: &str, validator_count: usize) -> Result<(), N
         let local_id =
             pemrix_network::PeerId::from_public_key_hash(Hash::hash_bytes(address.as_bytes()));
 
-        // Bootstrap to all other validators. The TCP transport will retry
-        // until each peer is connected, and duplicate connections are harmless
-        // because the peers map is keyed by peer id.
-        //
-        // The validator's network peer id is derived from its address bytes,
-        // matching the derivation inside `spawn_bft_validator`.
+        // Bootstrap only to the previous validator in the chain. This avoids
+        // both peers dialing each other at the same time.
         let mut bootstrap: BTreeMap<pemrix_network::PeerId, SocketAddr> = BTreeMap::new();
-        for (j, other) in validator_addresses.iter().enumerate() {
-            if i == j {
-                continue;
-            }
-            let other_id =
-                pemrix_network::PeerId::from_public_key_hash(Hash::hash_bytes(other.as_bytes()));
-            bootstrap.insert(other_id, validator_addrs[other]);
+        if i > 0 {
+            let prev = &validator_addresses[i - 1];
+            let prev_id =
+                pemrix_network::PeerId::from_public_key_hash(Hash::hash_bytes(prev.as_bytes()));
+            bootstrap.insert(prev_id, validator_addrs[prev]);
         }
 
         let config = NodeConfig {

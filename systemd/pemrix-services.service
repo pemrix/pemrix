@@ -1,6 +1,6 @@
 [Unit]
-Description=PEMRIX BFT Validator
-After=network.target
+Description=PEMRIX Shared Services (RPC, faucet, explorer, webhooks)
+After=network.target pemrix-validator.service
 Wants=network.target
 
 [Service]
@@ -8,7 +8,7 @@ Type=simple
 User=pemrix
 Group=pemrix
 WorkingDirectory=/var/lib/pemrix
-ExecStart=/usr/local/bin/pemrix start --validator --data-dir /var/lib/pemrix
+ExecStart=/usr/local/bin/pemrix services --rpc-url http://127.0.0.1:61001
 Restart=always
 RestartSec=5
 

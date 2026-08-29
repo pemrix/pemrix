@@ -199,7 +199,7 @@ async fn run_bft_validator(
     }
 
     let consensus = Arc::new(Mutex::new(consensus));
-    let transport = Arc::new(Mutex::new(transport));
+    let transport = Arc::new(transport);
 
     // Spawn network event loop.
     let event_consensus = consensus.clone();
@@ -221,7 +221,7 @@ async fn run_bft_validator(
     let mut last_proposed_height = 0u64;
     loop {
         // Wait for at least one peer before proposing (multi-validator BFT).
-        while transport.lock().await.peer_count().await == 0 {
+        while transport.peer_count().await == 0 {
             tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
         }
 
@@ -252,13 +252,16 @@ async fn run_bft_validator(
                 height,
                 block.hash()
             );
-            if let Err(e) = transport
-                .lock()
-                .await
-                .broadcast(Message::Block(block))
-                .await
-            {
+            if let Err(e) = transport.broadcast(Message::Block(block)).await {
                 warn!("[validator {}] Broadcast failed: {}", local_address, e);
+            }
+
+            // The proposer auto-voted for its own proposal. Broadcast that vote
+            // so non-proposer validators can reach a quorum and finalize the
+            // same height.
+            if let Some(vote) = consensus.lock().await.own_vote(height) {
+                let bytes = pemrix_primitives::encoding::encode(&vote);
+                let _ = transport.broadcast(Message::Vote(bytes)).await;
             }
 
             // The proposer auto-voted; try to finalize immediately (useful for
@@ -280,11 +283,11 @@ async fn run_bft_validator(
 /// Process incoming network events and feed them to the consensus engine.
 async fn run_network_event_loop(
     consensus: Arc<Mutex<Consensus>>,
-    transport: Arc<Mutex<TcpTransport>>,
+    transport: Arc<TcpTransport>,
     finalized_tx: mpsc::UnboundedSender<Block>,
 ) {
     loop {
-        let event = transport.lock().await.next_event().await;
+        let event = transport.next_event().await;
         match event {
             Some(NetworkEvent::PeerConnected(peer)) => {
                 info!("Peer connected: {:?}", peer);
@@ -305,7 +308,7 @@ async fn run_network_event_loop(
                 };
                 if let Some(vote) = own_vote {
                     let bytes = pemrix_primitives::encoding::encode(&vote);
-                    let _ = transport.lock().await.broadcast(Message::Vote(bytes)).await;
+                    let _ = transport.broadcast(Message::Vote(bytes)).await;
                 }
 
                 if let Some(block) = consensus.lock().await.finalize_pending().await {

@@ -48,6 +48,25 @@ enum Commands {
         #[arg(short, long, default_value = "./pemrix-data")]
         data_dir: String,
     },
+    /// Run shared services (RPC, faucet, explorer, webhooks) against a validator.
+    Services {
+        /// Validator RPC URL to poll for blocks and submit transactions.
+        #[arg(short, long, default_value = "http://127.0.0.1:61001")]
+        rpc_url: String,
+    },
+    /// Bootstrap a multi-validator BFT network from validator keys.
+    BootstrapNetwork {
+        /// Output directory for genesis and per-validator configs.
+        #[arg(short, long, default_value = "./pemrix-network")]
+        output_dir: String,
+        /// Network chain ID.
+        #[arg(short, long, default_value = "pemrix-main")]
+        chain_id: String,
+        /// Validator entries in the form `<validator_key.json_path>@<host:port>`.
+        /// Repeat for each validator.
+        #[arg(short, long, value_delimiter = ',', required = true)]
+        validators: Vec<String>,
+    },
     /// Run a local PEMRIX testnet with faucet, explorer, and webhooks.
     Testnet {
         /// Path to the testnet data directory.
@@ -111,6 +130,30 @@ async fn main() -> Result<()> {
         Commands::Keys { data_dir } => {
             let keys = pemrix_node::keys(&data_dir)?;
             println!("{}", keys);
+        }
+        Commands::Services { rpc_url } => {
+            info!("Starting PEMRIX shared services against {}", rpc_url);
+            pemrix_node::run_services(&rpc_url).await?;
+        }
+        Commands::BootstrapNetwork {
+            output_dir,
+            chain_id,
+            validators,
+        } => {
+            info!("Bootstrapping PEMRIX BFT network in {}", output_dir);
+            let entries: Vec<(String, String)> = validators
+                .iter()
+                .map(|s| {
+                    let parts: Vec<&str> = s.splitn(2, '@').collect();
+                    if parts.len() != 2 {
+                        anyhow::bail!("invalid validator entry: {} (expected path@host:port)", s);
+                    }
+                    Ok((parts[0].to_string(), parts[1].to_string()))
+                })
+                .collect::<Result<Vec<_>, anyhow::Error>>()?;
+            let manifest = pemrix_node::manifest_from_key_files(&entries)?;
+            pemrix_node::bootstrap_bft_network(&chain_id, &manifest, &[], &output_dir)?;
+            info!("Bootstrap complete. Copy validator-N directories to each host.");
         }
         Commands::Testnet {
             data_dir,

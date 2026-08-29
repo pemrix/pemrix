@@ -21,9 +21,26 @@ use tracing::{info, warn};
 /// A TCP transport that connects to a static set of bootstrap peers.
 pub struct TcpTransport {
     local_id: PeerId,
-    peers: Arc<Mutex<BTreeMap<PeerId, mpsc::UnboundedSender<Message>>>>,
-    events: mpsc::UnboundedReceiver<NetworkEvent>,
+    peers: Arc<Mutex<BTreeMap<PeerId, PeerConnection>>>,
+    events: Arc<Mutex<mpsc::UnboundedReceiver<NetworkEvent>>>,
     listen_addr: SocketAddr,
+}
+
+/// A connection slot for a peer. The token is used to ensure that only the
+/// task which actually owns the slot removes it on exit, even when a
+/// connection is replaced by a newer one.
+struct PeerConnection {
+    tx: mpsc::UnboundedSender<Message>,
+    token: Arc<()>,
+}
+
+impl PeerConnection {
+    fn new(tx: mpsc::UnboundedSender<Message>) -> Self {
+        Self {
+            tx,
+            token: Arc::new(()),
+        }
+    }
 }
 
 impl TcpTransport {
@@ -43,7 +60,8 @@ impl TcpTransport {
         let actual_addr = listener.local_addr().map_err(|_| "local_addr failed")?;
 
         let (event_tx, event_rx) = mpsc::unbounded_channel();
-        let peers: Arc<Mutex<BTreeMap<PeerId, mpsc::UnboundedSender<Message>>>> =
+        let events = Arc::new(Mutex::new(event_rx));
+        let peers: Arc<Mutex<BTreeMap<PeerId, PeerConnection>>> =
             Arc::new(Mutex::new(BTreeMap::new()));
 
         // Accept incoming connections.
@@ -131,7 +149,7 @@ impl TcpTransport {
         Ok(Self {
             local_id,
             peers,
-            events: event_rx,
+            events,
             listen_addr: actual_addr,
         })
     }
@@ -172,28 +190,28 @@ impl TcpTransport {
 
 #[async_trait]
 impl Transport for TcpTransport {
-    async fn broadcast(&mut self, message: Message) -> Result<(), &'static str> {
+    async fn broadcast(&self, message: Message) -> Result<(), &'static str> {
         let peers = self.peers.lock().await;
         if peers.is_empty() {
             return Err("no connected peers");
         }
-        for (peer_id, tx) in peers.iter() {
-            if tx.send(message.clone()).is_err() {
+        for (peer_id, conn) in peers.iter() {
+            if conn.tx.send(message.clone()).is_err() {
                 warn!("Failed to broadcast to peer {:?}", peer_id);
             }
         }
         Ok(())
     }
 
-    async fn send_to(&mut self, peer: &PeerId, message: Message) -> Result<(), &'static str> {
+    async fn send_to(&self, peer: &PeerId, message: Message) -> Result<(), &'static str> {
         let peers = self.peers.lock().await;
-        let tx = peers.get(peer).ok_or("peer not connected")?;
-        tx.send(message).map_err(|_| "peer channel closed")?;
+        let conn = peers.get(peer).ok_or("peer not connected")?;
+        conn.tx.send(message).map_err(|_| "peer channel closed")?;
         Ok(())
     }
 
-    async fn next_event(&mut self) -> Option<NetworkEvent> {
-        self.events.recv().await
+    async fn next_event(&self) -> Option<NetworkEvent> {
+        self.events.lock().await.recv().await
     }
 }
 
@@ -202,7 +220,7 @@ async fn handle_incoming(
     stream: TcpStream,
     addr: SocketAddr,
     local_id: PeerId,
-    peers: Arc<Mutex<BTreeMap<PeerId, mpsc::UnboundedSender<Message>>>>,
+    peers: Arc<Mutex<BTreeMap<PeerId, PeerConnection>>>,
     events: mpsc::UnboundedSender<NetworkEvent>,
 ) {
     info!("Incoming TCP connection from {}", addr);
@@ -216,7 +234,7 @@ async fn run_connection(
     stream: TcpStream,
     known_peer: Option<PeerId>,
     local_id: PeerId,
-    peers: Arc<Mutex<BTreeMap<PeerId, mpsc::UnboundedSender<Message>>>>,
+    peers: Arc<Mutex<BTreeMap<PeerId, PeerConnection>>>,
     events: mpsc::UnboundedSender<NetworkEvent>,
 ) -> Result<(), &'static str> {
     let (mut reader, mut writer) = stream.into_split();
@@ -244,13 +262,46 @@ async fn run_connection(
         }
     }
 
-    // Channel for outbound messages to this peer.
+    // Prevent duplicate bidirectional connections. If both peers dial each
+    // other, keep exactly one socket. Both sides must agree on which socket
+    // survives so the connection is not torn down:
+    //   - Outbound (dialed) sockets survive when local_id > remote_id.
+    //   - Inbound (accepted) sockets survive when remote_id > local_id.
+    // This deterministically picks the socket initiated by the higher peer id.
+    // We atomically check for an existing entry and insert a new one under a
+    // single lock; the token returned by `PeerConnection::new` lets us remove
+    // only the slot we own, so a slow incoming handler cannot wipe out a stable
+    // outbound connection whose entry replaced ours.
+    // Prevent duplicate bidirectional connections. If both peers dial each
+    // other, both sides must keep the same socket or the connection is torn
+    // down. The socket initiated by the higher peer id is the one both sides
+    // keep: outbound sockets win when local_id > remote_id, and inbound sockets
+    // win when remote_id > local_id. When there is no existing entry yet, the
+    // first connection is always kept (handles unidirectional bootstrap).
+    // The token returned by `PeerConnection::new` lets us remove only the slot
+    // we own, so a replaced handler cannot wipe out the stable connection.
+    let is_outbound = known_peer.is_some();
+    let wins_tie = if is_outbound {
+        local_id.0 > remote_id.0
+    } else {
+        remote_id.0 > local_id.0
+    };
     let (tx, mut rx) = mpsc::unbounded_channel::<Message>();
-
-    {
+    let (inserted, our_token) = {
         let mut peers = peers.lock().await;
-        peers.insert(remote_id, tx);
-    }
+        if let Some(existing) = peers.get(&remote_id) {
+            if !wins_tie {
+                return Err("duplicate connection closed");
+            }
+            // This socket wins the tie: notify the old handler that its channel
+            // is being replaced so it exits without removing our slot.
+            let _ = existing.tx.send(Message::Ping);
+        }
+        let conn = PeerConnection::new(tx);
+        let token = Arc::clone(&conn.token);
+        peers.insert(remote_id, conn);
+        (true, token)
+    };
 
     let _ = events.send(NetworkEvent::PeerConnected(remote_id));
 
@@ -271,9 +322,13 @@ async fn run_connection(
 
     outbound.abort();
 
-    {
+    if inserted {
         let mut peers = peers.lock().await;
-        peers.remove(&remote_id);
+        if let Some(conn) = peers.get(&remote_id) {
+            if Arc::ptr_eq(&conn.token, &our_token) {
+                peers.remove(&remote_id);
+            }
+        }
     }
 
     read_result
@@ -414,5 +469,99 @@ mod tests {
             }
             other => panic!("unexpected event: {:?}", other),
         }
+    }
+
+    #[tokio::test]
+    async fn bidirectional_bootstrap_forms_single_connection() {
+        let id_a = peer_id("a");
+        let id_b = peer_id("b");
+
+        let mut bootstrap_a = BTreeMap::new();
+        bootstrap_a.insert(id_b, addr(60032));
+        let mut transport_a = TcpTransport::new(id_a, addr(60031), bootstrap_a)
+            .await
+            .unwrap();
+
+        let mut bootstrap_b = BTreeMap::new();
+        bootstrap_b.insert(id_a, addr(60031));
+        let mut transport_b = TcpTransport::new(id_b, addr(60032), bootstrap_b)
+            .await
+            .unwrap();
+
+        // Both sides should observe exactly one peer-connected event.
+        let event_a = tokio::time::timeout(
+            tokio::time::Duration::from_secs(2),
+            transport_a.next_event(),
+        )
+        .await
+        .expect("timeout waiting for A connect")
+        .expect("expected a network event on A");
+        assert!(matches!(event_a, NetworkEvent::PeerConnected(peer) if peer == id_b));
+
+        let event_b = tokio::time::timeout(
+            tokio::time::Duration::from_secs(2),
+            transport_b.next_event(),
+        )
+        .await
+        .expect("timeout waiting for B connect")
+        .expect("expected a network event on B");
+        assert!(matches!(event_b, NetworkEvent::PeerConnected(peer) if peer == id_a));
+
+        // Let connection ownership settle after the simultaneous dial and
+        // drain any duplicate PeerConnected events emitted by replacements.
+        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+        while let Ok(Some(event)) = tokio::time::timeout(
+            tokio::time::Duration::from_millis(50),
+            transport_a.next_event(),
+        )
+        .await
+        {
+            assert!(matches!(event, NetworkEvent::PeerConnected(_)));
+        }
+        while let Ok(Some(event)) = tokio::time::timeout(
+            tokio::time::Duration::from_millis(50),
+            transport_b.next_event(),
+        )
+        .await
+        {
+            assert!(matches!(event, NetworkEvent::PeerConnected(_)));
+        }
+        assert!(
+            transport_a.peer_count().await > 0,
+            "A should have a connected peer"
+        );
+        assert!(
+            transport_b.peer_count().await > 0,
+            "B should have a connected peer"
+        );
+
+        // Messages should flow in both directions over the surviving socket.
+        transport_a
+            .send_to(&id_b, Message::Ping)
+            .await
+            .expect("A send to B should succeed");
+
+        let event = tokio::time::timeout(
+            tokio::time::Duration::from_secs(2),
+            transport_b.next_event(),
+        )
+        .await
+        .expect("timeout waiting for B event")
+        .expect("expected a network event on B");
+        assert!(matches!(event, NetworkEvent::MessageReceived(peer, Message::Ping) if peer == id_a));
+
+        transport_b
+            .send_to(&id_a, Message::Pong)
+            .await
+            .expect("B send to A should succeed");
+
+        let event = tokio::time::timeout(
+            tokio::time::Duration::from_secs(2),
+            transport_a.next_event(),
+        )
+        .await
+        .expect("timeout waiting for A event")
+        .expect("expected a network event on A");
+        assert!(matches!(event, NetworkEvent::MessageReceived(peer, Message::Pong) if peer == id_b));
     }
 }
