@@ -2,13 +2,17 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="logo/logo-mark-white.svg">
     <source media="(prefers-color-scheme: light)" srcset="logo/logo-mark-black.svg">
-    <img alt="PEMRIX" src="logo/logo-mark-black.svg" width="96">
+    <img alt="PEMRIX" src="logo/logo-mark-black.svg" width="90">
   </picture>
 </p>
 
 <h1 align="center">PEMRIX</h1>
 
-<p align="center"><strong>Global settlement layer for payments, assets, and autonomous commerce.</strong></p>
+<p align="center"><strong>The global value layer for the next century of commerce.</strong></p>
+
+<p align="center">
+  Permissionless. Post-quantum ready. Built to settle payments, assets, and machine economies at internet scale.
+</p>
 
 <p align="center">
   <a href="https://github.com/pemrix/pemrix/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/pemrix/pemrix/ci.yml?branch=main&style=flat-square&label=CI" alt="CI"></a>
@@ -19,107 +23,94 @@
 
 ---
 
-## What is PEMRIX?
+## What PEMRIX Is
 
-PEMRIX is a permissionless value network: a blockchain designed from the ground up for real-world payments, programmable assets, and machine-to-machine commerce.
+PEMRIX is a next-generation, open settlement protocol. It combines the self-custody and global reach of a public blockchain with the speed and simplicity expected from modern payment networks — then adds crypto-agility so the protocol can evolve as cryptography, consensus, and compute change.
 
-- **Payments first.** Shop QR codes, checkout links, subscriptions, and merchant settlement — with the simplicity of modern payment apps.
-- **Self-custody by default.** Users hold their own keys. No company can freeze a wallet or reverse a finalized transaction.
-- **Programmable value.** WASM smart contracts and policy wallets let developers and AI agents transact under rules.
-- **Built to evolve.** Cryptography, consensus, and execution can upgrade through on-chain governance without forking the ledger.
+It is designed for three forces that will dominate the next decades of the economy:
 
-> **Current status:** working local testnet. Mainnet readiness requires security audits, validator onboarding, and battle-testing at scale.
+- **Global payments** — instant, final, programmable value transfer without intermediaries.
+- **Digital assets** — tokens, contracts, and ownership enforced by mathematics, not jurisdiction.
+- **Autonomous commerce** — AI agents, IoT devices, and machines that transact under policy.
 
----
-
-## How a Payment Works
-
-1. A merchant shows a QR code from the PEMRIX Merchant app.
-2. A customer scans it, confirms the amount, and taps **Pay**.
-3. The wallet signs the transaction and broadcasts it to validators.
-4. Validators verify the signature, balance, and nonce independently.
-5. Once >⅔ of voting power agrees, the payment is final.
-6. The merchant sees **Paid** — usually in seconds.
-
-Internet is required, just like any digital payment. Under the hood it is a blockchain transaction; on the surface it feels like UPI, PhonePe, or Apple Pay.
+> **Current state:** working local testnet. Mainnet readiness requires security audits, validator onboarding, and real-world load testing.
 
 ---
 
-## How PEMRIX Compares
+## Why PEMRIX
 
-| Dimension | Bitcoin | Ethereum | BNB Chain | Solana | **PEMRIX** |
+| Legacy blockchains | Legacy payments | PEMRIX |
+|---|---|---|
+| Slow finality, high fees, hard to upgrade. | Closed ledgers, geographic limits, frozen accounts. | **Open, fast-finality settlement with upgradeable cryptography.** |
+| Mining or energy-heavy consensus. | Single companies control the ledger. | **BFT + Proof-of-Stake. No mining. No single operator.** |
+| Locked into one language or one signature scheme. | No programmability. | **WASM smart contracts. Crypto-agile signatures. Built for the future.** |
+
+PEMRIX is not an incremental improvement. It is a redesign of the settlement layer with a thousand-year assumption: **protocols outlive companies, countries, and cryptosystems.**
+
+---
+
+## How the Network Compares
+
+| | Bitcoin | Ethereum | BNB Chain | Solana | **PEMRIX** |
 |---|---|---|---|---|---|
-| **Consensus** | Proof-of-Work | Proof-of-Stake | Proof-of-Stake (21 validators) | Proof-of-Stake + Proof-of-History | **BFT + Proof-of-Stake** |
+| **Consensus** | Proof-of-Work | Proof-of-Stake | Proof-of-Stake (21 validators) | Proof-of-Stake + PoH | **BFT + Proof-of-Stake** |
 | **Block time** | ~10 min | ~12 sec | ~3 sec | ~400 ms | **Target: sub-second** |
 | **Finality** | ~60 min | ~12 min | ~3 sec | ~12 sec | **Deterministic, seconds** |
 | **Smart-contract VM** | Limited Script | EVM / Solidity | EVM / Solidity | Solana VM / Rust | **WASM VM / Rust, C/C++** |
-| **Default signatures** | ECDSA | ECDSA | ECDSA | Ed25519 | **Ed25519, PQC-migration ready** |
+| **Signatures** | ECDSA | ECDSA | ECDSA | Ed25519 | **Ed25519 → hybrid → post-quantum** |
 | **Supply model** | 21M hard cap | No hard cap | No hard cap | No hard cap | **1B initial, bounded issuance + burn** |
-| **Primary use** | Store of value | DeFi, NFTs | Trading | High-speed apps | **Payments, settlement, AI commerce** |
+| **Upgrade path** | Social hard forks | Social hard forks | Controlled by Binance | Hard forks | **On-chain governance + crypto-agility** |
+| **Primary use** | Store of value | DeFi, NFTs | Trading | High-speed apps | **Payments, settlement, autonomous commerce** |
 
-| Dimension | UPI | PhonePe / GPay | PayPal | Razorpay / Stripe | **PEMRIX** |
+| | UPI | PhonePe / GPay | PayPal | Razorpay / Stripe | **PEMRIX** |
 |---|---|---|---|---|---|
 | **Open network** | No | No | No | No | **Yes** |
-| **Self-custody** | No (bank account) | No | No | No | **Yes (user owns keys)** |
-| **Cross-border** | No (India only) | No | Limited | Limited | **Global by default** |
-| **Programmable money** | No | No | No | No | **Yes (smart contracts)** |
-| **Who controls it** | NPCI / RBI | Company | Company | Company | **Validator set + token-holder governance** |
-
-PEMRIX is not a copy of any of the above. It borrows the openness of public blockchains and the convenience of payment apps, then adds crypto-agility and an AI-native application layer.
+| **Self-custody** | No (bank account) | No | No | No | **Yes** |
+| **Cross-border** | No (India only) | No | Limited | Limited | **Global** |
+| **Programmable money** | No | No | No | No | **Yes** |
+| **Censorship resistance** | No | No | No | No | **By design** |
 
 ---
 
-## Why Open Source?
+## A Payment in Six Seconds
 
-The protocol is open source so that validators, developers, and security researchers can audit the rules, run their own nodes, and verify that the network behaves exactly as documented.
+1. Merchant shows a QR code.
+2. Customer scans and confirms.
+3. Wallet signs and broadcasts.
+4. Validators verify independently.
+5. >⅔ of voting power finalizes the block.
+6. Merchant sees **Paid**.
 
-Open source does not mean "easy to copy." The real moat of a live network is:
-
-- **Economic security** — the value staked to protect the ledger.
-- **Adoption** — wallets, merchants, developers, and apps built on PEMRIX.
-- **Liquidity** — exchanges and fiat on/off-ramp partners.
-- **Trust over time** — years of reliable, auditable operation.
-- **Closed-source products** — the PEMRIX Wallet, Merchant Console, and fiat bridges can remain proprietary products built on the open protocol.
-
-The code is transparent. The network effect is the asset.
+Internet is required, like any digital payment. On the surface it feels like UPI or Apple Pay. Under the hood it is a globally replicated, cryptographically final settlement.
 
 ---
 
-## Design Principles
+## Architecture Built to Outlast
 
-| Principle | Meaning |
+| Layer | What it does |
 |---|---|
-| **Tiny core, massive periphery** | Validators run only consensus-critical code. Wallets, exchanges, AI, and analytics live outside. |
-| **Crypto-agility** | Classical → hybrid → post-quantum signatures via on-chain governance. |
-| **Protocol agility** | Consensus, execution, and networking upgrade through governance with extraordinary safeguards. |
-| **Permissionless base, regulated interfaces** | The base layer is open. Fiat on/off-ramps operate through licensed partners. |
-| **Determinism** | Every validator computes identical state transitions from identical inputs. |
-| **Developer-first** | First-class SDKs, APIs, webhooks, sandbox, testnet, and multi-language docs. |
-| **AI-native, not AI-bloated** | AI agents transact through policy wallets; the blockchain does not run LLMs. |
+| **Settlement (L1)** | BFT consensus, mempool, state, canonical encoding. |
+| **Execution** | WASM VM for smart contracts, native transfers, gas metering. |
+| **Cryptography** | Ed25519 today, with a migration path to hybrid and post-quantum signatures. |
+| **Networking** | QUIC transport for fast, encrypted, mobile-friendly P2P. |
+| **Storage** | RocksDB backend for durable validator state. |
+| **Applications** | Wallets, merchant consoles, SDKs, AI agent policies — built outside the core. |
+
+The core is intentionally tiny. Everything that can live outside consensus does.
 
 ---
 
-## Technical Highlights
-
-| Component | Choice |
-|---|---|
-| **Language** | Rust |
-| **Consensus** | BFT + Proof-of-Stake (no mining) |
-| **Networking** | QUIC |
-| **Smart-contract VM** | WebAssembly |
-| **Signatures** | Ed25519 today, crypto-agile migration to PQC |
-| **Storage** | RocksDB / embedded KV |
-
-### Performance Targets
+## Performance Targets
 
 | Metric | Target |
 |---|---|
-| Block time | **Sub-second under ideal network conditions** |
+| Block time | **Sub-second under ideal conditions** |
 | Finality | **Deterministic, seconds** |
 | Throughput | **10,000+ sustained payment TPS** |
-| Validator hardware | Accessible cloud server or dedicated machine |
+| Validator hardware | Standard cloud server or dedicated machine |
+| Cryptographic migration | **On-chain, without hard forks** |
 
-These are design targets, not current measured performance. The present implementation is a testnet and must be benchmarked and optimized before mainnet.
+These are engineering targets for the production network. The current testnet is functional but not yet benchmarked at production scale.
 
 ---
 
@@ -131,11 +122,40 @@ These are design targets, not current measured performance. The present implemen
 | Decimals | 9 |
 | Initial block reward | 10 PEMRIX per block |
 | Reward decay interval | 2,000,000 blocks (~4.6 years) |
-| Decay rate | 10% reduction per interval |
+| Decay rate | 10% per interval |
 | Minimum block reward | 0.1 PEMRIX per block |
 | Asymptotic maximum supply | ~1,100,000,000 PEMRIX |
 
-Supply is bounded and predictable. Small rewards continue indefinitely to keep validators incentivized, unlike a hard cap that eventually relies only on fees.
+Supply is bounded and predictable. Issuance decays forever, and transaction fees are partially burned. Validators remain incentivized without relying on a hard cap that eventually collapses into fee-only economics.
+
+---
+
+## Trust and Security
+
+- **Open source protocol.** Every rule is auditable. Anyone can run a node, inspect the state, or validate the math.
+- **No single point of control.** Not Quanvio, not any bank, not any government. The network is run by a distributed validator set.
+- **Economic security.** Validators stake PEMRIX. Misbehavior is automatically slashed.
+- **Crypto-agility.** If a cryptographic primitive is broken — by quantum computers or otherwise — the protocol can migrate without a ledger fracture.
+- **Deterministic finality.** Once >⅔ of validators agree, a block is final. It cannot be silently reversed.
+- **Audits planned.** External security review, fuzzing, and bug bounties before mainnet.
+
+Report vulnerabilities privately to `security@pemrix.com`.
+
+---
+
+## Open Source, Hard to Copy
+
+The protocol is open source so validators, developers, and researchers can verify it. But open source does not mean easy to replicate.
+
+The real defenses of a live network are:
+
+- **Economic security** — the stake protecting the ledger.
+- **Adoption** — wallets, merchants, developers, and apps.
+- **Liquidity** — exchanges and fiat on/off-ramp partners.
+- **Trust over time** — years of reliable operation.
+- **Proprietary products** — the PEMRIX Wallet, Merchant Console, and fiat bridges can remain closed-source products built on the open protocol.
+
+The code is transparent. The network effect is the moat.
 
 ---
 
@@ -146,9 +166,10 @@ pemrix/
 ├── crates/          # Core Rust libraries (consensus, crypto, VM, RPC, SDK)
 ├── node/            # Validator / full-node binary
 ├── sdks/            # Client SDKs (Go, Python, TypeScript)
-├── docs/            # Public API, developer, and validator docs
+├── docs/            # Architecture, API, developer, and validator docs
 ├── systemd/         # systemd unit files for validators
 ├── scripts/         # Validator setup helpers
+├── pemrix-marketing/# Marketing site and public docs
 └── proto/           # Protobuf definitions for gRPC
 ```
 
@@ -181,18 +202,7 @@ See [`docs/VALIDATORS.md`](docs/VALIDATORS.md) to run a validator.
 - [`docs/API.md`](docs/API.md) — RPC and gRPC API reference.
 - [`docs/DEVELOPERS.md`](docs/DEVELOPERS.md) — Build, test, and contribute.
 - [`docs/VALIDATORS.md`](docs/VALIDATORS.md) — Run a validator or full node.
-
----
-
-## Security
-
-- Consensus-critical code is minimal and deterministic.
-- All transactions are cryptographically signed.
-- Cryptographic primitives are crypto-agile for future upgrades.
-- Dependencies are pinned and audited via `cargo-deny`.
-- External security audits are planned before mainnet.
-
-Report vulnerabilities privately to `security@pemrix.com`.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Full architecture and roadmap.
 
 ---
 
@@ -213,4 +223,4 @@ at your option.
 
 ---
 
-<p align="center">Founded by <a href="https://github.com/debaranjan-pegu">Debaranjan Pegu</a>. Built by the PEMRIX community.</p>
+<p align="center">Founded by <a href="https://github.com/debaranjan-pegu"><strong>Debaranjan Pegu</strong></a>.<br>Built for the long term by the PEMRIX community.</p>
