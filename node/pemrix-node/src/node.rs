@@ -134,11 +134,10 @@ async fn start_solo(_config: NodeConfig, genesis: GenesisConfig) -> Result<(), N
 
 /// Run a multi-validator BFT node connected to peers over TCP.
 async fn start_bft(config: NodeConfig, genesis: GenesisConfig) -> Result<(), NodeError> {
-    let (_tx, mut rx) = mpsc::unbounded_channel::<Block>();
+    let (_tx, _rx) = mpsc::unbounded_channel::<Block>();
     let handle = spawn_bft_validator(config, genesis, _tx);
     // The node binary does not wire finalized blocks to shared services;
     // just keep the task alive.
-    let _ = rx.recv().await;
     handle.await.map_err(|_| NodeError::Consensus)?
 }
 
