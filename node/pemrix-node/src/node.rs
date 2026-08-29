@@ -222,6 +222,10 @@ async fn run_bft_validator(
     loop {
         // Wait for at least one peer before proposing (multi-validator BFT).
         while transport.peer_count().await == 0 {
+            info!(
+                "[validator {}] Waiting for peers (peer_count=0)",
+                local_address
+            );
             tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
         }
 
@@ -229,6 +233,13 @@ async fn run_bft_validator(
             let c = consensus.lock().await;
             c.validator_set().proposer(height, 0) == Some(local_address)
         };
+        info!(
+            "[validator {}] block loop height={} peer_count={} is_proposer={}",
+            local_address,
+            height,
+            transport.peer_count().await,
+            is_proposer
+        );
 
         if is_proposer && height > last_proposed_height {
             let block = {
