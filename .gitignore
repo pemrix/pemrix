@@ -15,3 +15,21 @@ dist/
 build/
 __pycache__/
 *.pyc
+
+# Internal / non-open-source directories.
+# Keep these in the local workspace, but never commit them to the public repo.
+pemrix-marketing/
+logo/
+docs/DISCUSSION.md
+docs/PEMRIX_EXECUTIVE_QA_AND_REALITY.md
+docs/PEMRIX_FOUNDER_REALITY_CHECK.md
+docs/ROADMAP.md
+docs/SECURITY/
+scripts/.env.example
+scripts/cloudflare-setup.sh
+scripts/cloudfare-secret.md
+scripts/deploy-server-3.py
+
+# Local-only notes / scratch files.
+*.local.md
+private/
