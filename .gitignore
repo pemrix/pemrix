@@ -33,3 +33,5 @@ scripts/deploy-server-3.py
 # Local-only notes / scratch files.
 *.local.md
 private/
+
+docs/PEMRIX_FAQ.md
