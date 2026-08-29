@@ -13,6 +13,7 @@ pub mod engine;
 pub mod error;
 pub mod mempool;
 pub mod proposal;
+pub mod rewards;
 pub mod solo;
 pub mod validator_set;
 
@@ -21,5 +22,6 @@ pub use engine::ConsensusEngine;
 pub use error::ConsensusError;
 pub use mempool::{Mempool, SimpleMempool};
 pub use proposal::{Finality, Proposal, Vote};
+pub use rewards::distribute_block_reward;
 pub use solo::SoloConsensus;
 pub use validator_set::{Validator, ValidatorSet};
