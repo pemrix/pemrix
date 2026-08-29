@@ -10,6 +10,7 @@ use pemrix_explorer::ExplorerService;
 use pemrix_faucet::{FaucetConfig, FaucetService, LocalSubmitter};
 use pemrix_rpc::{RpcServer, RpcState};
 use pemrix_webhooks::WebhookService;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 use tracing::{info, warn};
@@ -29,6 +30,24 @@ pub async fn run_services(rpc_url: &str) -> Result<(), crate::NodeError> {
     let webhooks_listen = pemrix_ports::webhooks_local();
 
     let rpc_state = RpcState::new();
+
+    // Seed genesis allocations so the proxy balance matches the validator
+    // before any blocks are polled. Use /var/lib/pemrix by default.
+    let data_dir: PathBuf = std::env::var("PEMRIX_DATA_DIR")
+        .ok()
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("/var/lib/pemrix"));
+    if let Ok(genesis) = crate::GenesisConfig::load(data_dir.to_str().unwrap_or("/var/lib/pemrix"))
+    {
+        for (address, account) in &genesis.allocations {
+            rpc_state.set_account(*address, *account).await;
+        }
+        info!(
+            "Seeded {} genesis allocations into services RPC state",
+            genesis.allocations.len()
+        );
+    }
+
     let explorer = ExplorerService::new(&explorer_listen);
     let webhooks = WebhookService::new(webhooks_listen.clone());
 
