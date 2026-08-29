@@ -13,6 +13,7 @@ description = "State storage abstraction and backends for PEMRIX nodes."
 pemrix-primitives = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true }
+hex = { workspace = true }
 
 [features]
 default = []

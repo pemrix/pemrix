@@ -14,7 +14,7 @@
 use crate::{ConsensusEngine, ConsensusError, Finality, Proposal, ValidatorSet, Vote};
 use pemrix_primitives::{Address, Block, BlockBody, BlockHeader, Hash, Transaction};
 use pemrix_storage::{InMemoryBackend, StateBackend, StateStore};
-use pemrix_vm::{NativeExecutor, Vm};
+use pemrix_vm::{BlockExecutor, Vm};
 use std::collections::{BTreeMap, BTreeSet};
 use tracing::warn;
 
@@ -200,7 +200,7 @@ impl<B: StateBackend> BftConsensus<B> {
         height: u64,
         transactions: Vec<Transaction>,
     ) -> Result<Block, ConsensusError> {
-        let executor = NativeExecutor;
+        let executor = BlockExecutor::new();
         for tx in &transactions {
             executor
                 .execute(&mut self.state, tx)

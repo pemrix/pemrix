@@ -1,6 +1,6 @@
 //! RPC request/response types.
 
-use pemrix_primitives::{Address, Balance, Hash, Transaction};
+use pemrix_primitives::{Address, Balance, Delegation, Hash, Transaction, ValidatorRecord};
 use serde::{Deserialize, Serialize};
 
 /// Response for a balance query.
@@ -41,6 +41,26 @@ pub struct NonceResponse {
     pub address: Address,
     /// Account nonce.
     pub nonce: u64,
+}
+
+/// Response for a validator query.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ValidatorResponse {
+    /// Validator operator address.
+    pub address: Address,
+    /// Validator record.
+    pub validator: ValidatorRecord,
+}
+
+/// Response for a delegation query.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DelegationResponse {
+    /// Delegator address.
+    pub delegator: Address,
+    /// Validator address.
+    pub validator: Address,
+    /// Delegation record.
+    pub delegation: Delegation,
 }
 
 /// Request to send a transaction.

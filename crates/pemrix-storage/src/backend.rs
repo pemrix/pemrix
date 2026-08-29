@@ -3,7 +3,7 @@
 use crate::StorageError;
 use pemrix_primitives::{Account, Address, Hash};
 
-/// A storage backend for account state.
+/// A storage backend for account state and arbitrary protocol records.
 pub trait StateBackend: Send + Sync {
     /// Get an account by address.
     fn get_account(&self, address: &Address) -> Result<Option<Account>, StorageError>;
@@ -14,6 +14,15 @@ pub trait StateBackend: Send + Sync {
     /// Delete an account.
     fn delete_account(&mut self, address: &Address) -> Result<(), StorageError>;
 
+    /// Get a raw value by key.
+    fn get_raw(&self, key: &[u8]) -> Result<Option<Vec<u8>>, StorageError>;
+
+    /// Put a raw key-value pair.
+    fn put_raw(&mut self, key: &[u8], value: &[u8]) -> Result<(), StorageError>;
+
+    /// Delete a raw key.
+    fn delete_raw(&mut self, key: &[u8]) -> Result<(), StorageError>;
+
     /// Compute the state root.
     fn state_root(&self) -> Result<Hash, StorageError>;
 }
@@ -22,6 +31,7 @@ pub trait StateBackend: Send + Sync {
 #[derive(Clone, Debug, Default)]
 pub struct InMemoryBackend {
     accounts: std::collections::BTreeMap<Address, Account>,
+    raw: std::collections::BTreeMap<Vec<u8>, Vec<u8>>,
 }
 
 impl InMemoryBackend {
@@ -46,8 +56,34 @@ impl StateBackend for InMemoryBackend {
         Ok(())
     }
 
+    fn get_raw(&self, key: &[u8]) -> Result<Option<Vec<u8>>, StorageError> {
+        Ok(self.raw.get(key).cloned())
+    }
+
+    fn put_raw(&mut self, key: &[u8], value: &[u8]) -> Result<(), StorageError> {
+        self.raw.insert(key.to_vec(), value.to_vec());
+        Ok(())
+    }
+
+    fn delete_raw(&mut self, key: &[u8]) -> Result<(), StorageError> {
+        self.raw.remove(key);
+        Ok(())
+    }
+
     fn state_root(&self) -> Result<Hash, StorageError> {
-        let bytes = pemrix_primitives::encoding::encode(&self.accounts);
+        let mut snapshot = std::collections::BTreeMap::new();
+        for (addr, account) in &self.accounts {
+            let mut key = b"acc:".to_vec();
+            key.extend_from_slice(addr.as_bytes());
+            snapshot.insert(
+                hex::encode(&key),
+                pemrix_primitives::encoding::encode(account),
+            );
+        }
+        for (key, value) in &self.raw {
+            snapshot.insert(hex::encode(key), value.clone());
+        }
+        let bytes = pemrix_primitives::encoding::encode(&snapshot);
         Ok(Hash::hash_bytes(&bytes))
     }
 }
@@ -110,26 +146,40 @@ impl StateBackend for RocksDbBackend {
             .map_err(|e| StorageError::Backend(format!("rocksdb delete error: {e}")))
     }
 
+    fn get_raw(&self, key: &[u8]) -> Result<Option<Vec<u8>>, StorageError> {
+        match self.db.get(key) {
+            Ok(Some(bytes)) => Ok(Some(bytes)),
+            Ok(None) => Ok(None),
+            Err(e) => Err(StorageError::Backend(format!("rocksdb get error: {e}"))),
+        }
+    }
+
+    fn put_raw(&mut self, key: &[u8], value: &[u8]) -> Result<(), StorageError> {
+        self.db
+            .put(key, value)
+            .map_err(|e| StorageError::Backend(format!("rocksdb put error: {e}")))
+    }
+
+    fn delete_raw(&mut self, key: &[u8]) -> Result<(), StorageError> {
+        self.db
+            .delete(key)
+            .map_err(|e| StorageError::Backend(format!("rocksdb delete error: {e}")))
+    }
+
     fn state_root(&self) -> Result<Hash, StorageError> {
-        // Collect all accounts into a BTreeMap so the root is deterministic.
+        // Collect all key-value entries into a BTreeMap so the root is deterministic.
+        // Keys are hex-encoded because the placeholder encoder requires string map keys.
         // TODO: For mainnet scale this should be replaced by an incremental
         // Merkle/Patricia trie. Loading the entire state into memory works for
         // testnet and early mainnet only.
-        let mut accounts = std::collections::BTreeMap::new();
+        let mut snapshot = std::collections::BTreeMap::new();
         let iter = self.db.iterator(rocksdb::IteratorMode::Start);
         for item in iter {
             let (key, value) =
                 item.map_err(|e| StorageError::Backend(format!("rocksdb iterator error: {e}")))?;
-            if key.starts_with(Self::ACCOUNT_PREFIX) {
-                let address_bytes: [u8; 32] = key[Self::ACCOUNT_PREFIX.len()..]
-                    .try_into()
-                    .map_err(|_| StorageError::Backend("invalid address key".to_string()))?;
-                let account: Account = pemrix_primitives::encoding::decode(&value)
-                    .map_err(|_| StorageError::Serialization)?;
-                accounts.insert(Address(address_bytes), account);
-            }
+            snapshot.insert(hex::encode(&key), value.to_vec());
         }
-        let bytes = pemrix_primitives::encoding::encode(&accounts);
+        let bytes = pemrix_primitives::encoding::encode(&snapshot);
         Ok(Hash::hash_bytes(&bytes))
     }
 }
@@ -146,6 +196,27 @@ mod tests {
         let root1 = backend.state_root().unwrap();
         let root2 = backend.state_root().unwrap();
         assert_eq!(root1, root2);
+    }
+
+    #[test]
+    fn in_memory_raw_key_round_trip() {
+        let mut backend = InMemoryBackend::new();
+        backend.put_raw(b"val:test", b"record").unwrap();
+        assert_eq!(
+            backend.get_raw(b"val:test").unwrap().as_deref(),
+            Some("record".as_bytes())
+        );
+        backend.delete_raw(b"val:test").unwrap();
+        assert!(backend.get_raw(b"val:test").unwrap().is_none());
+    }
+
+    #[test]
+    fn in_memory_raw_keys_affect_state_root() {
+        let mut backend = InMemoryBackend::new();
+        let root1 = backend.state_root().unwrap();
+        backend.put_raw(b"val:test", b"record").unwrap();
+        let root2 = backend.state_root().unwrap();
+        assert_ne!(root1, root2);
     }
 
     #[test]

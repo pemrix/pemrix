@@ -3,7 +3,7 @@
 use crate::{ConsensusEngine, ConsensusError, Finality};
 use pemrix_primitives::{Address, Block, BlockBody, BlockHeader, Hash, Transaction};
 use pemrix_storage::{InMemoryBackend, StateStore};
-use pemrix_vm::{ExecutionResult, NativeExecutor, Vm};
+use pemrix_vm::{BlockExecutor, ExecutionResult, Vm};
 
 /// A single-validator consensus engine that produces blocks on demand.
 pub struct SoloConsensus {
@@ -56,7 +56,7 @@ impl ConsensusEngine for SoloConsensus {
         height: u64,
         transactions: Vec<Transaction>,
     ) -> Result<Block, ConsensusError> {
-        let executor = NativeExecutor;
+        let executor = BlockExecutor::new();
         for tx in &transactions {
             let _result: ExecutionResult = executor
                 .execute(&mut self.state, tx)

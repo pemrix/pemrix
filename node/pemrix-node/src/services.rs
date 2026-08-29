@@ -224,6 +224,12 @@ async fn ingest_block(
 
         sender.balance = sender.balance.saturating_sub(total);
         sender.nonce = sender.nonce.saturating_add(1);
+
+        // Replay staking side effects for payloads the VM recognizes.
+        if let Ok(op) = pemrix_vm::StakingExecutor::decode(&tx.payload) {
+            replay_staking(rpc_state, &tx.sender, op).await;
+        }
+
         rpc_state.set_account(tx.sender, sender).await;
 
         let mut recipient = rpc_state
@@ -253,5 +259,70 @@ async fn ingest_block(
             )
             .await;
         rpc_state.store_transaction(tx.hash(), tx.clone()).await;
+    }
+}
+
+async fn replay_staking(
+    rpc_state: &RpcState,
+    sender: &pemrix_primitives::Address,
+    op: pemrix_vm::StakingOperation,
+) {
+    use pemrix_primitives::ValidatorRecord;
+    use pemrix_vm::StakingOperation;
+
+    match op {
+        StakingOperation::RegisterValidator {
+            consensus_pubkey,
+            commission_bps,
+            self_stake,
+        } => {
+            let mut account = rpc_state.get_account(sender).await.unwrap_or_default();
+            account.balance = account.balance.saturating_sub(self_stake);
+            rpc_state.set_account(*sender, account).await;
+
+            let record =
+                ValidatorRecord::new(*sender, consensus_pubkey, self_stake, commission_bps);
+            rpc_state.set_validator(*sender, record).await;
+        }
+        StakingOperation::Delegate { validator, amount } => {
+            let mut account = rpc_state.get_account(sender).await.unwrap_or_default();
+            account.balance = account.balance.saturating_sub(amount);
+            rpc_state.set_account(*sender, account).await;
+
+            if let Some(mut record) = rpc_state.get_validator(&validator).await {
+                record.delegated_stake = record.delegated_stake.saturating_add(amount);
+                rpc_state.set_validator(validator, record).await;
+            }
+
+            let mut delegation = rpc_state
+                .get_delegation(sender, &validator)
+                .await
+                .unwrap_or_default();
+            delegation.amount = delegation.amount.saturating_add(amount);
+            rpc_state
+                .set_delegation(*sender, validator, delegation)
+                .await;
+        }
+        StakingOperation::Undelegate { validator, amount } => {
+            if let Some(mut record) = rpc_state.get_validator(&validator).await {
+                record.delegated_stake = record.delegated_stake.saturating_sub(amount);
+                rpc_state.set_validator(validator, record).await;
+            }
+
+            if let Some(mut delegation) = rpc_state.get_delegation(sender, &validator).await {
+                delegation.amount = delegation.amount.saturating_sub(amount);
+                if delegation.amount == 0 {
+                    rpc_state.delete_delegation(sender, &validator).await;
+                } else {
+                    rpc_state
+                        .set_delegation(*sender, validator, delegation)
+                        .await;
+                }
+            }
+
+            let mut account = rpc_state.get_account(sender).await.unwrap_or_default();
+            account.balance = account.balance.saturating_add(amount);
+            rpc_state.set_account(*sender, account).await;
+        }
     }
 }

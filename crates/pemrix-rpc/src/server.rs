@@ -1,8 +1,8 @@
 //! HTTP REST RPC server.
 
 use crate::{
-    BalanceResponse, BlockResponse, NonceResponse, RpcError, SendTransactionRequest,
-    TransactionResponse,
+    BalanceResponse, BlockResponse, DelegationResponse, NonceResponse, RpcError,
+    SendTransactionRequest, TransactionResponse, ValidatorResponse,
 };
 use axum::{
     extract::{Path, State},
@@ -12,7 +12,7 @@ use axum::{
     Json, Router,
 };
 use pemrix_crypto::{Ed25519Scheme, SignatureScheme};
-use pemrix_primitives::{Account, Address, Block, Hash, Transaction};
+use pemrix_primitives::{Account, Address, Block, Delegation, Hash, Transaction, ValidatorRecord};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::str::FromStr;
@@ -34,6 +34,8 @@ struct RpcStateInner {
     transactions: HashMap<Hash, Transaction>,
     pending: Vec<Transaction>,
     height: u64,
+    validators: HashMap<Address, ValidatorRecord>,
+    delegations: HashMap<(Address, Address), Delegation>,
 }
 
 impl RpcState {
@@ -103,6 +105,53 @@ impl RpcState {
     pub async fn height(&self) -> u64 {
         self.inner.lock().await.height
     }
+
+    /// Store a validator record.
+    pub async fn set_validator(&self, address: Address, record: ValidatorRecord) {
+        self.inner.lock().await.validators.insert(address, record);
+    }
+
+    /// Get a validator record by operator address.
+    pub async fn get_validator(&self, address: &Address) -> Option<ValidatorRecord> {
+        self.inner.lock().await.validators.get(address).cloned()
+    }
+
+    /// Store a delegation.
+    pub async fn set_delegation(
+        &self,
+        delegator: Address,
+        validator: Address,
+        delegation: Delegation,
+    ) {
+        self.inner
+            .lock()
+            .await
+            .delegations
+            .insert((delegator, validator), delegation);
+    }
+
+    /// Get a delegation by delegator and validator.
+    pub async fn get_delegation(
+        &self,
+        delegator: &Address,
+        validator: &Address,
+    ) -> Option<Delegation> {
+        self.inner
+            .lock()
+            .await
+            .delegations
+            .get(&(*delegator, *validator))
+            .cloned()
+    }
+
+    /// Delete a delegation.
+    pub async fn delete_delegation(&self, delegator: &Address, validator: &Address) {
+        self.inner
+            .lock()
+            .await
+            .delegations
+            .remove(&(*delegator, *validator));
+    }
 }
 
 /// RPC server.
@@ -141,6 +190,11 @@ impl RpcServer {
             .route("/v1/transactions/:hash", get(transaction_handler))
             .route("/v1/accounts/:address/balance", get(balance_handler))
             .route("/v1/accounts/:address/nonce", get(nonce_handler))
+            .route("/v1/validators/:address", get(validator_handler))
+            .route(
+                "/v1/delegations/:delegator/:validator",
+                get(delegation_handler),
+            )
             .route("/v1/transactions", post(send_transaction_handler))
             .with_state(self.state.clone())
     }
@@ -247,6 +301,37 @@ async fn nonce_handler(
     let address = Address::from_str(&address).map_err(|_| StatusCode::BAD_REQUEST)?;
     let nonce = state.get_account(&address).await.map_or(0, |a| a.nonce);
     Ok(Json(NonceResponse { address, nonce }))
+}
+
+async fn validator_handler(
+    State(state): State<RpcState>,
+    Path(address): Path<String>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let address = Address::from_str(&address).map_err(|_| StatusCode::BAD_REQUEST)?;
+    state
+        .get_validator(&address)
+        .await
+        .map(|validator| Json(ValidatorResponse { address, validator }))
+        .ok_or(StatusCode::NOT_FOUND)
+}
+
+async fn delegation_handler(
+    State(state): State<RpcState>,
+    Path((delegator, validator)): Path<(String, String)>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let delegator = Address::from_str(&delegator).map_err(|_| StatusCode::BAD_REQUEST)?;
+    let validator = Address::from_str(&validator).map_err(|_| StatusCode::BAD_REQUEST)?;
+    state
+        .get_delegation(&delegator, &validator)
+        .await
+        .map(|delegation| {
+            Json(DelegationResponse {
+                delegator,
+                validator,
+                delegation,
+            })
+        })
+        .ok_or(StatusCode::NOT_FOUND)
 }
 
 /// Validate a transaction before accepting it into the mempool.

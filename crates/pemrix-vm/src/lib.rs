@@ -9,15 +9,19 @@
 
 #![warn(missing_docs)]
 
+pub mod block_executor;
 pub mod error;
 pub mod executor;
 pub mod gas;
 pub mod native;
+pub mod staking;
 
 #[cfg(feature = "wasm")]
 pub mod wasm;
 
+pub use block_executor::BlockExecutor;
 pub use error::VmError;
 pub use executor::{ExecutionResult, Vm};
 pub use gas::Gas;
 pub use native::NativeExecutor;
+pub use staking::{StakingExecutor, StakingOperation};

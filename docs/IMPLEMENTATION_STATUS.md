@@ -90,7 +90,7 @@
 | Transaction fee burn | `docs/ARCHITECTURE.md` | `crates/pemrix-vm/src/native.rs` | Implemented | Fee is deducted from sender and not credited anywhere (burned). |
 | Block reward distribution | `docs/ARCHITECTURE.md` | `crates/pemrix-consensus/src/rewards.rs` | Implemented | Proposer bonus + commission-aware payout calculation. Not yet wired into block finalization. |
 | Staking types | `docs/ARCHITECTURE.md`, `docs/VALIDATORS.md` | `crates/pemrix-primitives/src/staking.rs` | Implemented | ValidatorRecord, Delegation, ValidatorStatus. |
-| Staking state machine | `docs/ARCHITECTURE.md`, `docs/VALIDATORS.md` | — | Planned | Register/delegate/undelegate transactions not yet implemented. |
+| Staking state machine | `docs/ARCHITECTURE.md`, `docs/VALIDATORS.md` | `crates/pemrix-vm/src/staking.rs`, `crates/pemrix-vm/src/block_executor.rs` | Implemented | Register/delegate/undelegate transactions execute on-chain; CLI commands and RPC query endpoints exist. |
 | Slashing / jailing | `docs/VALIDATORS.md` | `crates/pemrix-consensus/src/slashing.rs` | Implemented | Misbehavior evidence, slash rates, jail durations, release logic. |
 
 ## Governance
@@ -134,8 +134,8 @@
 
 ## Biggest Gaps to Close Before Mainnet
 
-1. **Staking state machine** — register/delegate/undelegate transactions and on-chain validator set updates.
-2. **Block reward wiring** — calculate and apply rewards during block finalization.
+1. **Block reward wiring** — calculate and apply rewards during block finalization.
+2. **Validator set updates from staking** — on-chain registration must feed back into the BFT validator set.
 3. **WASM host functions** — let contracts read/write state and call other contracts.
 4. **Fiat on/off-ramp partnerships** — not a code problem; requires legal/commercial work.
 5. **External security audits** — required before real value enters.
@@ -149,4 +149,4 @@
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-08-30 | Kimi Code / Quanvio Labs | Initial implementation-status audit |
-| 1.1 | 2026-08-30 | Kimi Code / Quanvio Labs | Updated after staking, rewards, slashing, WASM, and services sync work |
+| 1.2 | 2026-08-30 | Kimi Code / Quanvio Labs | Staking state machine implemented: raw storage, validator/delegation accessors, BlockExecutor, CLI, RPC, services sync |

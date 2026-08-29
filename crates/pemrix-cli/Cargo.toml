@@ -18,6 +18,7 @@ pemrix-node = { path = "../../node/pemrix-node" }
 pemrix-sdk = { workspace = true }
 pemrix-primitives = { workspace = true }
 pemrix-crypto = { workspace = true }
+pemrix-vm = { workspace = true }
 pemrix-testnet = { workspace = true }
 pemrix-ports = { workspace = true }
 clap = { workspace = true }
@@ -25,6 +26,8 @@ anyhow = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
 
 [features]
 default = ["rocksdb"]

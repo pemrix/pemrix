@@ -2,11 +2,31 @@
 //!
 //! Provides subcommands to initialize, start, and inspect a PEMRIX node.
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
+use pemrix_primitives::Address;
+use pemrix_sdk::{Client, HttpClient, Wallet};
+use std::str::FromStr;
 use tracing::info;
 
 mod demo;
+
+/// Encode a staking operation for the VM payload.
+fn encode_staking_op(op: pemrix_vm::StakingOperation) -> Vec<u8> {
+    let mut payload = vec![0x01];
+    payload.extend_from_slice(&serde_json::to_vec(&op).expect("staking op serializes"));
+    payload
+}
+
+/// Load a wallet from a PEMRIX key file.
+fn wallet_from_key_file(path: &str) -> Result<Wallet> {
+    let contents = std::fs::read_to_string(path)
+        .with_context(|| format!("failed to read key file: {path}"))?;
+    let key_file: pemrix_node::ValidatorKeyFile = serde_json::from_str(&contents)
+        .with_context(|| format!("failed to parse key file: {path}"))?;
+    let keypair = key_file.to_keypair()?;
+    Ok(Wallet::from_keypair(keypair))
+}
 
 #[derive(Parser)]
 #[command(name = "pemrix")]
@@ -84,6 +104,63 @@ enum Commands {
         /// Faucet server URL.
         #[arg(short, long, default_value = "http://127.0.0.1:61003")]
         faucet_url: String,
+    },
+    /// Register the local validator key as an on-chain validator.
+    RegisterValidator {
+        /// Path to a PEMRIX key file (e.g. validator_key.json).
+        #[arg(short, long)]
+        key_file: String,
+        /// RPC server URL.
+        #[arg(short, long, default_value = "http://127.0.0.1:61001")]
+        rpc_url: String,
+        /// Validator consensus public key, hex encoded.
+        #[arg(short, long)]
+        consensus_pubkey: String,
+        /// Commission rate in basis points (0-10000).
+        #[arg(short, long, default_value_t = 500)]
+        commission_bps: u16,
+        /// Amount of self-stake to lock.
+        #[arg(short, long)]
+        self_stake: u128,
+        /// Transaction fee.
+        #[arg(short, long, default_value_t = 1)]
+        fee: u128,
+    },
+    /// Delegate tokens to a validator.
+    Delegate {
+        /// Path to a PEMRIX key file (e.g. validator_key.json).
+        #[arg(short, long)]
+        key_file: String,
+        /// RPC server URL.
+        #[arg(short, long, default_value = "http://127.0.0.1:61001")]
+        rpc_url: String,
+        /// Validator address to delegate to.
+        #[arg(short, long)]
+        validator: String,
+        /// Amount to delegate.
+        #[arg(short, long)]
+        amount: u128,
+        /// Transaction fee.
+        #[arg(short, long, default_value_t = 1)]
+        fee: u128,
+    },
+    /// Undelegate tokens from a validator.
+    Undelegate {
+        /// Path to a PEMRIX key file (e.g. validator_key.json).
+        #[arg(short, long)]
+        key_file: String,
+        /// RPC server URL.
+        #[arg(short, long, default_value = "http://127.0.0.1:61001")]
+        rpc_url: String,
+        /// Validator address to undelegate from.
+        #[arg(short, long)]
+        validator: String,
+        /// Amount to undelegate.
+        #[arg(short, long)]
+        amount: u128,
+        /// Transaction fee.
+        #[arg(short, long, default_value_t = 1)]
+        fee: u128,
     },
 }
 
@@ -171,6 +248,67 @@ async fn main() -> Result<()> {
         } => {
             info!("Running PEMRIX wallet-to-merchant payment demo");
             demo::run(&rpc_url, &faucet_url).await?;
+        }
+        Commands::RegisterValidator {
+            key_file,
+            rpc_url,
+            consensus_pubkey,
+            commission_bps,
+            self_stake,
+            fee,
+        } => {
+            info!("Registering validator via {}", rpc_url);
+            let wallet = wallet_from_key_file(&key_file)?;
+            let client = HttpClient::new(&rpc_url);
+            let nonce = client.nonce(&wallet.address()).await?;
+            let pubkey_bytes =
+                hex::decode(&consensus_pubkey).with_context(|| "invalid consensus_pubkey hex")?;
+            let payload = encode_staking_op(pemrix_vm::StakingOperation::RegisterValidator {
+                consensus_pubkey: pubkey_bytes,
+                commission_bps,
+                self_stake,
+            });
+            let tx = wallet.custom_payload(payload, nonce, fee);
+            let hash = client.send_transaction(&tx).await?;
+            info!("Validator registration submitted: {}", hash);
+        }
+        Commands::Delegate {
+            key_file,
+            rpc_url,
+            validator,
+            amount,
+            fee,
+        } => {
+            info!("Delegating to {} via {}", validator, rpc_url);
+            let wallet = wallet_from_key_file(&key_file)?;
+            let client = HttpClient::new(&rpc_url);
+            let nonce = client.nonce(&wallet.address()).await?;
+            let validator = Address::from_str(&validator)
+                .map_err(|e| anyhow::anyhow!("invalid validator address: {validator}: {e}"))?;
+            let payload =
+                encode_staking_op(pemrix_vm::StakingOperation::Delegate { validator, amount });
+            let tx = wallet.custom_payload(payload, nonce, fee);
+            let hash = client.send_transaction(&tx).await?;
+            info!("Delegation submitted: {}", hash);
+        }
+        Commands::Undelegate {
+            key_file,
+            rpc_url,
+            validator,
+            amount,
+            fee,
+        } => {
+            info!("Undelegating from {} via {}", validator, rpc_url);
+            let wallet = wallet_from_key_file(&key_file)?;
+            let client = HttpClient::new(&rpc_url);
+            let nonce = client.nonce(&wallet.address()).await?;
+            let validator = Address::from_str(&validator)
+                .map_err(|e| anyhow::anyhow!("invalid validator address: {validator}: {e}"))?;
+            let payload =
+                encode_staking_op(pemrix_vm::StakingOperation::Undelegate { validator, amount });
+            let tx = wallet.custom_payload(payload, nonce, fee);
+            let hash = client.send_transaction(&tx).await?;
+            info!("Undelegation submitted: {}", hash);
         }
     }
 

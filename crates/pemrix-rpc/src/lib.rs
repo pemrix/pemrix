@@ -20,5 +20,6 @@ pub use error::RpcError;
 pub use handlers::{RpcHandler, SimpleRpcHandler};
 pub use server::{RpcServer, RpcState};
 pub use types::{
-    BalanceResponse, BlockResponse, NonceResponse, SendTransactionRequest, TransactionResponse,
+    BalanceResponse, BlockResponse, DelegationResponse, NonceResponse, SendTransactionRequest,
+    TransactionResponse, ValidatorResponse,
 };
