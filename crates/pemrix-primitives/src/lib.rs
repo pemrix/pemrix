@@ -25,3 +25,6 @@ pub use block::{Block, BlockBody, BlockHeader};
 pub use hash::Hash;
 pub use tokenomics::TokenomicsConfig;
 pub use transaction::Transaction;
+
+pub mod staking;
+pub use staking::{Delegation, ValidatorRecord, ValidatorStatus};
