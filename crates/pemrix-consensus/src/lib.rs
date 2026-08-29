@@ -14,6 +14,7 @@ pub mod error;
 pub mod mempool;
 pub mod proposal;
 pub mod rewards;
+pub mod slashing;
 pub mod solo;
 pub mod validator_set;
 
@@ -23,5 +24,6 @@ pub use error::ConsensusError;
 pub use mempool::{Mempool, SimpleMempool};
 pub use proposal::{Finality, Proposal, Vote};
 pub use rewards::distribute_block_reward;
+pub use slashing::{apply_slash, is_jailed, release_validators, Misbehavior, SlashingPolicy};
 pub use solo::SoloConsensus;
 pub use validator_set::{Validator, ValidatorSet};
