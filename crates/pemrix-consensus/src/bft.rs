@@ -137,13 +137,6 @@ impl<B: StateBackend> BftConsensus<B> {
     /// finalized once a quorum of votes is collected.
     pub async fn handle_block(&mut self, block: Block) -> Result<Vote, ConsensusError> {
         let proposal: Proposal = block.clone().into();
-        info!(
-            "[bft {}] handle_block height={} hash={} proposer={}",
-            self.local_address,
-            proposal.height,
-            proposal.block_hash,
-            Address(proposal.proposer)
-        );
         if let Err(e) = self.validate_proposal(&proposal) {
             warn!("[bft {}] validate_proposal failed: {:?}", self.local_address, e);
             return Err(e);
@@ -163,10 +156,8 @@ impl<B: StateBackend> BftConsensus<B> {
             };
             round_state.votes.insert(self.local_address, vote.clone());
             self.voted_this_height.insert(vote_key);
-            info!("[bft {}] voted for height={} hash={}", self.local_address, height, vote.block_hash);
             Ok(vote)
         } else {
-            warn!("[bft {}] already voted for height={}", self.local_address, height);
             Err(ConsensusError::InvalidVote)
         }
     }
@@ -293,29 +284,16 @@ impl<B: StateBackend> BftConsensus<B> {
                     .unwrap_or(0)
             })
             .sum();
-        let quorum = self.validator_set.quorum_threshold();
-        let has = power >= quorum;
-        info!(
-            "[bft {}] has_quorum height={} power={} quorum={} votes={} has={}",
-            self.local_address,
-            height,
-            power,
-            quorum,
-            round.votes.len(),
-            has
-        );
-        has
+        power >= self.validator_set.quorum_threshold()
     }
 
     /// Attempt to finalize the block at the given height if a quorum exists.
     fn try_finalize(&mut self, height: u64) -> Option<Block> {
-        info!("[bft {}] try_finalize height={} current_height={}", self.local_address, height, self.height);
         if !self.has_quorum(height) {
             return None;
         }
         let round = self.rounds.get_mut(&height)?;
         if round.finalized {
-            info!("[bft {}] height={} already finalized", self.local_address, height);
             return round.block.clone();
         }
         round.finalized = true;
@@ -327,10 +305,8 @@ impl<B: StateBackend> BftConsensus<B> {
             // height to keep memory bounded.
             self.voted_this_height
                 .retain(|(h, _)| *h != height);
-            info!("[bft {}] FINALIZED height={} hash={}", self.local_address, height, block.hash());
             Some(block)
         } else {
-            warn!("[bft {}] quorum but no block at height={}", self.local_address, height);
             None
         }
     }
@@ -400,22 +376,13 @@ impl<B: StateBackend> ConsensusEngine for BftConsensus<B> {
     }
 
     async fn handle_vote(&mut self, vote: Vote) -> Result<(), ConsensusError> {
-        info!(
-            "[bft {}] handle_vote height={} voter={} hash={}",
-            self.local_address,
-            vote.height,
-            Address(vote.voter),
-            vote.block_hash
-        );
         if let Err(e) = self.validate_vote(&vote) {
             warn!("[bft {}] validate_vote failed: {:?}", self.local_address, e);
             return Err(e);
         }
         let voter = Address(vote.voter);
         let round_state = self.rounds.entry(vote.height).or_default();
-        let height = vote.height;
         round_state.votes.insert(voter, vote);
-        info!("[bft {}] stored vote height={} total_votes={}", self.local_address, height, round_state.votes.len());
         Ok(())
     }
 

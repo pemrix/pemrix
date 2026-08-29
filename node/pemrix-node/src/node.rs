@@ -310,25 +310,18 @@ async fn run_network_event_loop(
                 warn!("Peer disconnected: {:?}", peer);
             }
             Some(NetworkEvent::MessageReceived(peer, Message::Block(block))) => {
-                info!(
-                    "[network] received Block from {:?} height={} hash={}",
-                    peer,
-                    block.header.height,
-                    block.hash()
-                );
                 let own_vote = {
                     let mut c = consensus.lock().await;
                     match c.handle_block(block).await {
                         Ok(vote) => Some(vote),
                         Err(e) => {
-                            warn!("[network] handle_block failed: {}", e);
+                            warn!("[network] handle_block from {:?} failed: {}", peer, e);
                             None
                         }
                     }
                 };
                 if let Some(vote) = own_vote {
                     let bytes = pemrix_primitives::encoding::encode(&vote);
-                    info!("[network] broadcasting own vote for height={} hash={}", vote.height, vote.block_hash);
                     if let Err(e) = transport.broadcast(Message::Vote(bytes)).await {
                         warn!("[network] vote broadcast failed: {}", e);
                     }
@@ -340,13 +333,6 @@ async fn run_network_event_loop(
             }
             Some(NetworkEvent::MessageReceived(peer, Message::Vote(bytes))) => {
                 if let Ok(vote) = pemrix_primitives::encoding::decode::<Vote>(&bytes) {
-                    info!(
-                        "[network] received Vote from {:?} height={} voter={} hash={}",
-                        peer,
-                        vote.height,
-                        Address(vote.voter),
-                        vote.block_hash
-                    );
                     let finalized = {
                         let mut c = consensus.lock().await;
                         let _ = c.handle_vote(vote).await;

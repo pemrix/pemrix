@@ -180,7 +180,6 @@ impl TcpTransport {
     ) -> Result<(), &'static str> {
         let bytes = pemrix_primitives::encoding::encode(message);
         let len = bytes.len() as u32;
-        info!("[tcp] writing message {} bytes to socket", len);
         writer
             .write_all(&len.to_be_bytes())
             .await
@@ -189,7 +188,6 @@ impl TcpTransport {
             .write_all(&bytes)
             .await
             .map_err(|_| "write payload failed")?;
-        info!("[tcp] wrote message {} bytes", len);
         Ok(())
     }
 }
@@ -356,7 +354,6 @@ async fn read_messages(
             }
         }
         let len = u32::from_be_bytes(len_bytes) as usize;
-        info!("[tcp] reading message {} bytes from {:?}", len, remote_id);
         if len > 8 * 1024 * 1024 {
             return Err("message too large");
         }
@@ -365,10 +362,8 @@ async fn read_messages(
             .read_exact(&mut buf)
             .await
             .map_err(|_| "read payload failed")?;
-        info!("[tcp] read message {} bytes from {:?}", len, remote_id);
         let message: Message =
             pemrix_primitives::encoding::decode(&buf).map_err(|_| "decode failed")?;
-        info!("[tcp] decoded message from {:?}: {:?}", remote_id, std::mem::discriminant(&message));
         let _ = events.send(NetworkEvent::MessageReceived(remote_id, message));
     }
 }
