@@ -210,6 +210,13 @@ async fn run_bft_validator(
     });
 
     // Block production loop.
+    let block_interval_ms = std::env::var("PEMRIX_BLOCK_INTERVAL_MS")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(1000u64)
+        .max(50);
+    let block_interval = tokio::time::Duration::from_millis(block_interval_ms);
+
     let mut height = 1u64;
     let mut last_proposed_height = 0u64;
     loop {
@@ -233,7 +240,7 @@ async fn run_bft_validator(
                             "[validator {}] Failed to propose block at height {}: {}",
                             local_address, height, e
                         );
-                        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+                        tokio::time::sleep(block_interval).await;
                         continue;
                     }
                 }
@@ -261,7 +268,7 @@ async fn run_bft_validator(
             }
         }
 
-        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        tokio::time::sleep(block_interval).await;
 
         let current_height = consensus.lock().await.height();
         if current_height >= height {
