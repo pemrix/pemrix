@@ -388,14 +388,14 @@ mod tests {
         let id_a = peer_id("a");
         let id_b = peer_id("b");
 
-        let mut transport_a = TcpTransport::new(id_a, addr(60010), BTreeMap::new())
+        let transport_a = TcpTransport::new(id_a, addr(60010), BTreeMap::new())
             .await
             .unwrap();
         let actual_addr_a = transport_a.local_addr();
 
         let mut bootstrap = BTreeMap::new();
         bootstrap.insert(id_a, actual_addr_a);
-        let mut transport_b = TcpTransport::new(id_b, addr(60011), bootstrap)
+        let transport_b = TcpTransport::new(id_b, addr(60011), bootstrap)
             .await
             .unwrap();
 
@@ -435,14 +435,14 @@ mod tests {
         let id_a = peer_id("a");
         let id_b = peer_id("b");
 
-        let mut transport_a = TcpTransport::new(id_a, addr(60020), BTreeMap::new())
+        let transport_a = TcpTransport::new(id_a, addr(60020), BTreeMap::new())
             .await
             .unwrap();
         let actual_addr_a = transport_a.local_addr();
 
         let mut bootstrap = BTreeMap::new();
         bootstrap.insert(id_a, actual_addr_a);
-        let mut transport_b = TcpTransport::new(id_b, addr(60021), bootstrap)
+        let transport_b = TcpTransport::new(id_b, addr(60021), bootstrap)
             .await
             .unwrap();
 
@@ -483,13 +483,13 @@ mod tests {
 
         let mut bootstrap_a = BTreeMap::new();
         bootstrap_a.insert(id_b, addr(60032));
-        let mut transport_a = TcpTransport::new(id_a, addr(60031), bootstrap_a)
+        let transport_a = TcpTransport::new(id_a, addr(60031), bootstrap_a)
             .await
             .unwrap();
 
         let mut bootstrap_b = BTreeMap::new();
         bootstrap_b.insert(id_a, addr(60031));
-        let mut transport_b = TcpTransport::new(id_b, addr(60032), bootstrap_b)
+        let transport_b = TcpTransport::new(id_b, addr(60032), bootstrap_b)
             .await
             .unwrap();
 
