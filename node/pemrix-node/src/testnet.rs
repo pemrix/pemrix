@@ -72,7 +72,7 @@ async fn run_solo_testnet(data_dir: &str) -> Result<(), NodeError> {
 
     let rpc_state = RpcState::new();
     let explorer = ExplorerService::new(&testnet.explorer_listen);
-    let webhooks = WebhookService::new(&pemrix_ports::webhooks_local());
+    let webhooks = WebhookService::new(pemrix_ports::webhooks_local());
 
     // Store genesis block and seed RPC state and explorer with allocations.
     rpc_state.store_block(genesis_block.clone()).await;
@@ -183,7 +183,7 @@ async fn run_bft_testnet(data_dir: &str, validator_count: usize) -> Result<(), N
 
     let rpc_state = RpcState::new();
     let explorer = ExplorerService::new(&testnet.explorer_listen);
-    let webhooks = WebhookService::new(&pemrix_ports::webhooks_local());
+    let webhooks = WebhookService::new(pemrix_ports::webhooks_local());
 
     rpc_state.store_block(genesis_block.clone()).await;
     explorer.state().ingest_block(genesis_block).await;
