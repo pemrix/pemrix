@@ -5,20 +5,24 @@
 //! on shared servers. TCP ports are 16-bit unsigned values with a maximum
 //! of 65535, so a true "7xxxx" range is not possible.
 //!
-//! | Service | Default Port |
-//! |---------|-------------|
-//! | RPC     | 61001       |
-//! | gRPC    | 61002       |
-//! | Faucet  | 61003       |
-//! | Explorer| 61004       |
-//! | Webhooks| 61005       |
-//! | P2P     | 61100+      |
+//! | Service       | Default Port |
+//! |---------------|-------------|
+//! | RPC           | 61001       |
+//! | gRPC          | 61002       |
+//! | Faucet        | 61003       |
+//! | Explorer      | 61004       |
+//! | Webhooks      | 61005       |
+//! | Services RPC  | 61006       |
+//! | P2P           | 61100+      |
 
-/// RPC JSON-RPC server.
+/// RPC JSON-RPC server (validator node).
 pub const RPC: u16 = 61001;
 
 /// gRPC server.
 pub const GRPC: u16 = 61002;
+
+/// User-facing RPC proxy run by the shared services process.
+pub const SERVICES_RPC: u16 = 61006;
 
 /// Faucet server.
 pub const FAUCET: u16 = 61003;
@@ -84,6 +88,16 @@ pub fn webhooks_public() -> String {
     format!("0.0.0.0:{}", WEBHOOKS)
 }
 
+/// Default listen address for the shared services RPC proxy on localhost.
+pub fn services_rpc_local() -> String {
+    format!("127.0.0.1:{}", SERVICES_RPC)
+}
+
+/// Default public listen address for the shared services RPC proxy.
+pub fn services_rpc_public() -> String {
+    format!("0.0.0.0:{}", SERVICES_RPC)
+}
+
 /// Default public listen address for a single validator P2P port.
 pub fn p2p_default() -> String {
     format!("0.0.0.0:{}", P2P_BASE)
@@ -110,7 +124,7 @@ mod tests {
 
     #[test]
     fn ports_are_five_digits_starting_with_six() {
-        for p in [RPC, GRPC, FAUCET, EXPLORER, WEBHOOKS, P2P_BASE] {
+        for p in [RPC, GRPC, FAUCET, EXPLORER, WEBHOOKS, SERVICES_RPC, P2P_BASE] {
             assert!(p >= 61000, "port {} is not in PEMRIX 61xxx range", p);
         }
     }

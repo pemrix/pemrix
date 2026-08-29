@@ -23,7 +23,7 @@ pub async fn run_services(rpc_url: &str) -> Result<(), crate::NodeError> {
         .filter(|s| !s.is_empty())
         .unwrap_or_else(|| "127.0.0.1".to_string());
 
-    let rpc_listen = format!("{}:{}", bind_host, pemrix_ports::RPC);
+    let rpc_listen = format!("{}:{}", bind_host, pemrix_ports::SERVICES_RPC);
     let faucet_listen = format!("{}:{}", bind_host, pemrix_ports::FAUCET);
     let explorer_listen = format!("{}:{}", bind_host, pemrix_ports::EXPLORER);
     let webhooks_listen = pemrix_ports::webhooks_local();

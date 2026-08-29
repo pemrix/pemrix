@@ -4,6 +4,7 @@ use crate::{GenesisConfig, NodeConfig, NodeError};
 use pemrix_consensus::{BftConsensus, ConsensusEngine, SimpleMempool, SoloConsensus, Vote};
 use pemrix_network::{Message, MockTransport, NetworkEvent, PeerId, TcpTransport, Transport};
 use pemrix_primitives::{Address, Block, Hash};
+use pemrix_rpc::RpcServer;
 #[cfg(not(feature = "rocksdb"))]
 use pemrix_storage::InMemoryBackend;
 use pemrix_storage::StateStore;
@@ -200,22 +201,81 @@ async fn run_bft_validator(
     let consensus = Arc::new(Mutex::new(consensus));
     let transport = Arc::new(transport);
 
+    // RPC state shared between the validator consensus layer and the RPC server.
+    let rpc_state = RpcServer::new(&config.rpc_listen).state().clone();
+    for (address, account) in &genesis.allocations {
+        rpc_state.set_account(*address, *account).await;
+    }
+
+    // Start the RPC server so external clients can query chain height and blocks.
+    let rpc_server = RpcServer::new_with_state(&config.rpc_listen, rpc_state.clone());
+    tokio::spawn(async move {
+        if let Err(e) = rpc_server.start().await {
+            warn!("RPC server exited: {}", e);
+        }
+    });
+
+    // Internal channel for streaming finalized blocks to the RPC state.
+    let (rpc_finalized_tx, mut rpc_finalized_rx) = mpsc::unbounded_channel::<Block>();
+
     // Spawn network event loop.
     let event_consensus = consensus.clone();
     let event_transport = transport.clone();
     let event_finalized = finalized_tx.clone();
+    let event_rpc_finalized = rpc_finalized_tx.clone();
     tokio::spawn(async move {
-        run_network_event_loop(event_consensus, event_transport, event_finalized).await;
+        run_network_event_loop(
+            event_consensus,
+            event_transport,
+            event_finalized,
+            event_rpc_finalized,
+        )
+        .await;
     });
 
-    // Block production loop.
+    // Spawn block production loop.
     let block_interval_ms = std::env::var("PEMRIX_BLOCK_INTERVAL_MS")
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(1000u64)
         .max(50);
     let block_interval = tokio::time::Duration::from_millis(block_interval_ms);
+    let producer_consensus = consensus.clone();
+    let producer_transport = transport.clone();
+    let producer_finalized = finalized_tx.clone();
+    let producer_rpc_finalized = rpc_finalized_tx.clone();
+    tokio::spawn(async move {
+        run_block_production_loop(
+            local_address,
+            producer_consensus,
+            producer_transport,
+            producer_finalized,
+            producer_rpc_finalized,
+            block_interval,
+        )
+        .await;
+    });
 
+    // Keep the validator alive by consuming finalized blocks and updating
+    // the RPC state. This loop also serves as the function's main anchor.
+    while let Some(block) = rpc_finalized_rx.recv().await {
+        let height = block.header.height;
+        rpc_state.store_block(block).await;
+        info!("[validator {}] RPC updated to height {}", local_address, height);
+    }
+
+    Ok(())
+}
+
+/// Run the block production loop for a BFT validator.
+async fn run_block_production_loop(
+    local_address: Address,
+    consensus: Arc<Mutex<Consensus>>,
+    transport: Arc<TcpTransport>,
+    finalized_tx: mpsc::UnboundedSender<Block>,
+    rpc_finalized_tx: mpsc::UnboundedSender<Block>,
+    block_interval: tokio::time::Duration,
+) {
     let mut height = 1u64;
     let mut last_proposed_height: Option<u64> = None;
     loop {
@@ -275,7 +335,8 @@ async fn run_bft_validator(
             }
 
             if let Some(block) = consensus.lock().await.finalize_pending().await {
-                let _ = finalized_tx.send(block);
+                let _ = finalized_tx.send(block.clone());
+                let _ = rpc_finalized_tx.send(block);
             }
         }
 
@@ -294,6 +355,7 @@ async fn run_network_event_loop(
     consensus: Arc<Mutex<Consensus>>,
     transport: Arc<TcpTransport>,
     finalized_tx: mpsc::UnboundedSender<Block>,
+    rpc_finalized_tx: mpsc::UnboundedSender<Block>,
 ) {
     loop {
         let event = transport.next_event().await;
@@ -323,7 +385,8 @@ async fn run_network_event_loop(
                 }
 
                 if let Some(block) = consensus.lock().await.finalize_pending().await {
-                    let _ = finalized_tx.send(block);
+                    let _ = finalized_tx.send(block.clone());
+                    let _ = rpc_finalized_tx.send(block);
                 }
             }
             Some(NetworkEvent::MessageReceived(peer, Message::Vote(bytes))) => {
@@ -335,7 +398,8 @@ async fn run_network_event_loop(
                     };
                     if let Some(block) = finalized {
                         info!("[network] finalized block height={} hash={}", block.header.height, block.hash());
-                        let _ = finalized_tx.send(block);
+                        let _ = finalized_tx.send(block.clone());
+                        let _ = rpc_finalized_tx.send(block);
                     }
                 } else {
                     warn!("[network] failed to decode Vote from {:?}", peer);
