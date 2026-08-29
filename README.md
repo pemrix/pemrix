@@ -11,7 +11,7 @@
 <p align="center"><strong>The global value layer for the next century of commerce.</strong></p>
 
 <p align="center">
-  Permissionless. Post-quantum ready. Built to settle payments, assets, and machine economies at internet scale.
+  Permissionless. Open source. Post-quantum ready. Built to settle payments, assets, and machine economies at internet scale.
 </p>
 
 <p align="center">
@@ -25,15 +25,13 @@
 
 ## What PEMRIX Is
 
-PEMRIX is a next-generation, open settlement protocol. It combines the self-custody and global reach of a public blockchain with the speed and simplicity expected from modern payment networks — then adds crypto-agility so the protocol can evolve as cryptography, consensus, and compute change.
+PEMRIX is a next-generation, open-source settlement protocol. It combines the self-custody and global reach of a public blockchain with the speed and simplicity expected from modern payment networks — then adds crypto-agility so the protocol can evolve as cryptography, consensus, and compute change.
 
 It is designed for three forces that will dominate the next decades of the economy:
 
 - **Global payments** — instant, final, programmable value transfer without intermediaries.
 - **Digital assets** — tokens, contracts, and ownership enforced by mathematics, not jurisdiction.
 - **Autonomous commerce** — AI agents, IoT devices, and machines that transact under policy.
-
-> **Current state:** working local testnet. Mainnet readiness requires security audits, validator onboarding, and real-world load testing.
 
 ---
 
@@ -72,14 +70,13 @@ PEMRIX is not an incremental improvement. It is a redesign of the settlement lay
 
 ---
 
-## A Payment in Six Seconds
+## A Payment in Seconds
 
 1. Merchant shows a QR code.
 2. Customer scans and confirms.
 3. Wallet signs and broadcasts.
-4. Validators verify independently.
-5. >⅔ of voting power finalizes the block.
-6. Merchant sees **Paid**.
+4. Validators verify and finalize the transaction.
+5. Merchant sees **Paid**.
 
 Internet is required, like any digital payment. On the surface it feels like UPI or Apple Pay. Under the hood it is a globally replicated, cryptographically final settlement.
 
