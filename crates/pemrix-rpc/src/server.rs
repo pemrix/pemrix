@@ -135,7 +135,7 @@ impl RpcServer {
     pub fn router(&self) -> Router {
         Router::new()
             .route("/v1/status", get(status_handler))
-            .route("/v1/blocks/:height/raw", get(block_raw_handler))
+            .route("/v1/blocks/raw/:height", get(block_raw_handler))
             .route("/v1/blocks/:height", get(block_by_height_handler))
             .route("/v1/blocks/hash/:hash", get(block_by_hash_handler))
             .route("/v1/transactions/:hash", get(transaction_handler))

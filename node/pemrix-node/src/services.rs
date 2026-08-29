@@ -140,7 +140,7 @@ async fn poll_validator(
         }
 
         for height in (last_height + 1)..=current_height {
-            let block_url = format!("{}/v1/blocks/{}/raw", rpc_url, height);
+            let block_url = format!("{}/v1/blocks/raw/{}", rpc_url, height);
             match client.get(&block_url).send().await {
                 Ok(resp) => match resp.json::<pemrix_primitives::Block>().await {
                     Ok(block) => {
