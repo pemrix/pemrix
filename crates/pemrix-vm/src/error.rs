@@ -24,4 +24,7 @@ pub enum VmError {
     /// Unknown operation.
     #[error("unknown operation")]
     UnknownOperation,
+    /// Contract execution failed.
+    #[error("execution error: {0}")]
+    Execution(String),
 }
