@@ -135,6 +135,7 @@ impl RpcServer {
     pub fn router(&self) -> Router {
         Router::new()
             .route("/v1/status", get(status_handler))
+            .route("/v1/blocks/:height/raw", get(block_raw_handler))
             .route("/v1/blocks/:height", get(block_by_height_handler))
             .route("/v1/blocks/hash/:hash", get(block_by_hash_handler))
             .route("/v1/transactions/:hash", get(transaction_handler))
@@ -164,6 +165,17 @@ async fn status_handler(State(state): State<RpcState>) -> impl IntoResponse {
         "height": state.height().await,
         "version": env!("CARGO_PKG_VERSION"),
     }))
+}
+
+async fn block_raw_handler(
+    State(state): State<RpcState>,
+    Path(height): Path<u64>,
+) -> Result<impl IntoResponse, StatusCode> {
+    state
+        .get_block_by_height(height)
+        .await
+        .map(Json)
+        .ok_or(StatusCode::NOT_FOUND)
 }
 
 async fn block_by_height_handler(

@@ -140,13 +140,11 @@ async fn poll_validator(
         }
 
         for height in (last_height + 1)..=current_height {
-            let block_url = format!("{}/v1/blocks/{}", rpc_url, height);
+            let block_url = format!("{}/v1/blocks/{}/raw", rpc_url, height);
             match client.get(&block_url).send().await {
-                Ok(resp) => match resp.json::<serde_json::Value>().await {
-                    Ok(body) => {
-                        if let Ok(block) = serde_json::from_value::<pemrix_primitives::Block>(body) {
-                            ingest_block(&rpc_state, &explorer, &webhooks, block).await;
-                        }
+                Ok(resp) => match resp.json::<pemrix_primitives::Block>().await {
+                    Ok(block) => {
+                        ingest_block(&rpc_state, &explorer, &webhooks, block).await;
                     }
                     Err(e) => warn!("failed to parse block {}: {}", height, e),
                 },
