@@ -10,6 +10,7 @@ members = [
     "crates/pemrix-sdk",
     "crates/pemrix-cli",
     "crates/pemrix-ports",
+    "crates/pemrix-protocol",
     "crates/pemrix-testnet",
     "crates/pemrix-faucet",
     "crates/pemrix-explorer",

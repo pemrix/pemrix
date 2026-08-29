@@ -1,0 +1,17 @@
+[package]
+name = "pemrix-protocol"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "Public protocol invariants, parameters, and constants for PEMRIX."
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
