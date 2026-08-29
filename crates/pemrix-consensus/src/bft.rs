@@ -16,7 +16,7 @@ use pemrix_primitives::{Address, Block, BlockBody, BlockHeader, Hash, Transactio
 use pemrix_storage::{InMemoryBackend, StateBackend, StateStore};
 use pemrix_vm::{NativeExecutor, Vm};
 use std::collections::{BTreeMap, BTreeSet};
-use tracing::{info, warn};
+use tracing::warn;
 
 /// State for a single BFT round.
 #[derive(Clone, Debug, Default)]
@@ -169,6 +169,11 @@ impl<B: StateBackend> BftConsensus<B> {
             .votes
             .get(&self.local_address)
             .cloned()
+    }
+
+    /// Return the block proposed by the local validator for a height, if any.
+    pub fn own_proposal(&self, height: u64) -> Option<Block> {
+        self.rounds.get(&height)?.block.clone()
     }
 
     /// Return the number of collected votes for a height (test helper).

@@ -217,7 +217,7 @@ async fn run_bft_validator(
     let block_interval = tokio::time::Duration::from_millis(block_interval_ms);
 
     let mut height = 1u64;
-    let mut last_proposed_height = 0u64;
+    let mut last_proposed_height: Option<u64> = None;
     loop {
         // Wait for at least one peer before proposing (multi-validator BFT).
         while transport.peer_count().await == 0 {
@@ -232,54 +232,48 @@ async fn run_bft_validator(
             let c = consensus.lock().await;
             c.validator_set().proposer(height, 0) == Some(local_address)
         };
-        info!(
-            "[validator {}] block loop height={} peer_count={} is_proposer={}",
-            local_address,
-            height,
-            transport.peer_count().await,
-            is_proposer
-        );
 
-        if is_proposer && height > last_proposed_height {
-            let block = {
-                let mut c = consensus.lock().await;
-                match c.propose(height, vec![]).await {
-                    Ok(block) => block,
-                    Err(e) => {
-                        warn!(
-                            "[validator {}] Failed to propose block at height {}: {}",
-                            local_address, height, e
-                        );
-                        tokio::time::sleep(block_interval).await;
-                        continue;
+        if is_proposer {
+            // Build the proposal once for this height, then keep re-broadcasting
+            // it until the height is finalized. This makes block propagation
+            // robust to transient network drops or peers that connect late.
+            if last_proposed_height != Some(height) {
+                let block = {
+                    let mut c = consensus.lock().await;
+                    match c.propose(height, vec![]).await {
+                        Ok(block) => block,
+                        Err(e) => {
+                            warn!(
+                                "[validator {}] Failed to propose block at height {}: {}",
+                                local_address, height, e
+                            );
+                            tokio::time::sleep(block_interval).await;
+                            continue;
+                        }
                     }
-                }
-            };
-            last_proposed_height = height;
-            info!(
-                "[validator {}] Proposed block {} with hash {}",
-                local_address,
-                height,
-                block.hash()
-            );
-            info!("[validator {}] broadcasting block height={} hash={}", local_address, height, block.hash());
-            if let Err(e) = transport.broadcast(Message::Block(block)).await {
-                warn!("[validator {}] Broadcast failed: {}", local_address, e);
+                };
+                last_proposed_height = Some(height);
+                info!(
+                    "[validator {}] Proposed block {} with hash {}",
+                    local_address,
+                    height,
+                    block.hash()
+                );
             }
 
-            // The proposer auto-voted for its own proposal. Broadcast that vote
-            // so non-proposer validators can reach a quorum and finalize the
-            // same height.
+            if let Some(block) = consensus.lock().await.own_proposal(height) {
+                if let Err(e) = transport.broadcast(Message::Block(block)).await {
+                    warn!("[validator {}] Block broadcast failed: {}", local_address, e);
+                }
+            }
+
             if let Some(vote) = consensus.lock().await.own_vote(height) {
                 let bytes = pemrix_primitives::encoding::encode(&vote);
-                info!("[validator {}] broadcasting proposer vote height={} hash={}", local_address, vote.height, vote.block_hash);
                 if let Err(e) = transport.broadcast(Message::Vote(bytes)).await {
-                    warn!("[validator {}] proposer vote broadcast failed: {}", local_address, e);
+                    warn!("[validator {}] Vote broadcast failed: {}", local_address, e);
                 }
             }
 
-            // The proposer auto-voted; try to finalize immediately (useful for
-            // single-validator tests) and after collecting peer votes.
             if let Some(block) = consensus.lock().await.finalize_pending().await {
                 let _ = finalized_tx.send(block);
             }
@@ -290,6 +284,7 @@ async fn run_bft_validator(
         let current_height = consensus.lock().await.height();
         if current_height >= height {
             height = current_height + 1;
+            last_proposed_height = None;
         }
     }
 }
