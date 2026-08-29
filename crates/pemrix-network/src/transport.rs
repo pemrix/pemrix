@@ -55,11 +55,7 @@ impl Transport for MockTransport {
         let mut state = self.state.lock().expect("mock transport lock poisoned");
         let peers: Vec<PeerId> = state.peers.keys().copied().collect();
         for peer in peers {
-            state
-                .peers
-                .entry(peer)
-                .or_default()
-                .push(message.clone());
+            state.peers.entry(peer).or_default().push(message.clone());
             state
                 .events
                 .push(NetworkEvent::MessageReceived(peer, message.clone()));
@@ -74,7 +70,9 @@ impl Transport for MockTransport {
             .get_mut(peer)
             .ok_or("peer not found")?
             .push(message.clone());
-        state.events.push(NetworkEvent::MessageReceived(*peer, message));
+        state
+            .events
+            .push(NetworkEvent::MessageReceived(*peer, message));
         Ok(())
     }
 

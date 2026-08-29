@@ -261,7 +261,10 @@ async fn run_bft_validator(
     while let Some(block) = rpc_finalized_rx.recv().await {
         let height = block.header.height;
         rpc_state.store_block(block).await;
-        info!("[validator {}] RPC updated to height {}", local_address, height);
+        info!(
+            "[validator {}] RPC updated to height {}",
+            local_address, height
+        );
     }
 
     Ok(())
@@ -323,7 +326,10 @@ async fn run_block_production_loop(
 
             if let Some(block) = consensus.lock().await.own_proposal(height) {
                 if let Err(e) = transport.broadcast(Message::Block(block)).await {
-                    warn!("[validator {}] Block broadcast failed: {}", local_address, e);
+                    warn!(
+                        "[validator {}] Block broadcast failed: {}",
+                        local_address, e
+                    );
                 }
             }
 
@@ -397,7 +403,11 @@ async fn run_network_event_loop(
                         c.finalize_pending().await
                     };
                     if let Some(block) = finalized {
-                        info!("[network] finalized block height={} hash={}", block.header.height, block.hash());
+                        info!(
+                            "[network] finalized block height={} hash={}",
+                            block.header.height,
+                            block.hash()
+                        );
                         let _ = finalized_tx.send(block.clone());
                         let _ = rpc_finalized_tx.send(block);
                     }

@@ -138,7 +138,10 @@ impl<B: StateBackend> BftConsensus<B> {
     pub async fn handle_block(&mut self, block: Block) -> Result<Vote, ConsensusError> {
         let proposal: Proposal = block.clone().into();
         if let Err(e) = self.validate_proposal(&proposal) {
-            warn!("[bft {}] validate_proposal failed: {:?}", self.local_address, e);
+            warn!(
+                "[bft {}] validate_proposal failed: {:?}",
+                self.local_address, e
+            );
             return Err(e);
         }
         let height = proposal.height;
@@ -308,8 +311,7 @@ impl<B: StateBackend> BftConsensus<B> {
             self.height = height;
             // Voting state is keyed by height; remove entries for finalized
             // height to keep memory bounded.
-            self.voted_this_height
-                .retain(|(h, _)| *h != height);
+            self.voted_this_height.retain(|(h, _)| *h != height);
             Some(block)
         } else {
             None

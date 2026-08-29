@@ -553,7 +553,9 @@ mod tests {
         .await
         .expect("timeout waiting for B event")
         .expect("expected a network event on B");
-        assert!(matches!(event, NetworkEvent::MessageReceived(peer, Message::Ping) if peer == id_a));
+        assert!(
+            matches!(event, NetworkEvent::MessageReceived(peer, Message::Ping) if peer == id_a)
+        );
 
         transport_b
             .send_to(&id_a, Message::Pong)
@@ -567,6 +569,8 @@ mod tests {
         .await
         .expect("timeout waiting for A event")
         .expect("expected a network event on A");
-        assert!(matches!(event, NetworkEvent::MessageReceived(peer, Message::Pong) if peer == id_b));
+        assert!(
+            matches!(event, NetworkEvent::MessageReceived(peer, Message::Pong) if peer == id_b)
+        );
     }
 }

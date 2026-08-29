@@ -38,7 +38,12 @@ pub async fn run_services(rpc_url: &str) -> Result<(), crate::NodeError> {
     let faucet_address = pemrix_primitives::Address::from_public_key_hash(
         pemrix_primitives::Hash::hash_bytes(&faucet_keypair.public.0),
     );
-    rpc_state.set_account(faucet_address, pemrix_primitives::Account::new(1_000_000_000, 0)).await;
+    rpc_state
+        .set_account(
+            faucet_address,
+            pemrix_primitives::Account::new(1_000_000_000, 0),
+        )
+        .await;
 
     let submitter = Arc::new(LocalSubmitter::new(rpc_state.clone(), faucet_address));
     let faucet_config = FaucetConfig {
@@ -48,7 +53,12 @@ pub async fn run_services(rpc_url: &str) -> Result<(), crate::NodeError> {
         cooldown_seconds: 0,
         rpc_url: rpc_url.to_string(),
     };
-    let faucet = FaucetService::new(faucet_config.clone(), faucet_keypair, faucet_address, submitter);
+    let faucet = FaucetService::new(
+        faucet_config.clone(),
+        faucet_keypair,
+        faucet_address,
+        submitter,
+    );
 
     let rpc = RpcServer::new_with_state(&rpc_listen, rpc_state.clone());
 
@@ -104,7 +114,13 @@ pub async fn run_services(rpc_url: &str) -> Result<(), crate::NodeError> {
         webhooks,
     ));
 
-    let _ = tokio::join!(rpc_handle, faucet_handle, explorer_handle, webhook_handle, poll_handle);
+    let _ = tokio::join!(
+        rpc_handle,
+        faucet_handle,
+        explorer_handle,
+        webhook_handle,
+        poll_handle
+    );
     Ok(())
 }
 
@@ -123,7 +139,10 @@ async fn poll_validator(
         let status_url = format!("{}/v1/status", rpc_url);
         let current_height = match client.get(&status_url).send().await {
             Ok(resp) => match resp.json::<serde_json::Value>().await {
-                Ok(body) => body.get("height").and_then(|v| v.as_u64()).unwrap_or(last_height),
+                Ok(body) => body
+                    .get("height")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(last_height),
                 Err(e) => {
                     warn!("failed to parse validator status: {}", e);
                     last_height
@@ -188,7 +207,10 @@ async fn ingest_block(
         sender.nonce = sender.nonce.saturating_add(1);
         rpc_state.set_account(tx.sender, sender).await;
 
-        let mut recipient = rpc_state.get_account(&tx.recipient).await.unwrap_or_default();
+        let mut recipient = rpc_state
+            .get_account(&tx.recipient)
+            .await
+            .unwrap_or_default();
         recipient.balance = recipient.balance.saturating_add(tx.amount);
         rpc_state.set_account(tx.recipient, recipient).await;
     }

@@ -124,7 +124,15 @@ mod tests {
 
     #[test]
     fn ports_are_five_digits_starting_with_six() {
-        for p in [RPC, GRPC, FAUCET, EXPLORER, WEBHOOKS, SERVICES_RPC, P2P_BASE] {
+        for p in [
+            RPC,
+            GRPC,
+            FAUCET,
+            EXPLORER,
+            WEBHOOKS,
+            SERVICES_RPC,
+            P2P_BASE,
+        ] {
             assert!(p >= 61000, "port {} is not in PEMRIX 61xxx range", p);
         }
     }
