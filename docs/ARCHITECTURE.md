@@ -918,7 +918,7 @@ github.com/pemrix
 | Document | Purpose | Location |
 |---|---|---|
 | `PEMRIX_VS_MARKET.md` | Plain-language comparison of PEMRIX vs. Bitcoin, Ethereum, UPI, PayPal, Razorpay, Stripe, etc. | `docs/PEMRIX_VS_MARKET.md` |
-| `PEMRIX_FAQ.md` | Answers to validator, fiat conversion, exchange, regulation, quantum, and source-code questions | `docs/PEMRIX_FAQ.md` |
+| `VALIDATORS.md` | Validator setup, security, governance, and economics | `docs/VALIDATORS.md` |
 | `API.md` | API and SDK surface for developers | `docs/API.md` |
 | `DEVELOPERS.md` | Quick-start for building on PEMRIX | `docs/DEVELOPERS.md` |
 

@@ -19,7 +19,10 @@ __pycache__/
 # Internal / non-open-source directories.
 # Keep these in the local workspace, but never commit them to the public repo.
 pemrix-marketing/
-logo/
+logo/brand-guidelines-*.png
+logo/logo-mark-*.png
+logo/logo-mark-white-extended.svg
+logo/pemrix-3000-white-fordark-exntension.svg
 docs/DISCUSSION.md
 docs/PEMRIX_EXECUTIVE_QA_AND_REALITY.md
 docs/PEMRIX_FOUNDER_REALITY_CHECK.md
