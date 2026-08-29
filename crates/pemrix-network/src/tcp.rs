@@ -10,7 +10,7 @@
 
 use crate::{Message, NetworkEvent, PeerId, Transport};
 use async_trait::async_trait;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -87,24 +87,30 @@ impl TcpTransport {
             }
         });
 
-        // Dial bootstrap peers, retrying until connected.
+        // Dial bootstrap peers, retrying until connected. Track in-flight dials
+        // so a slow handshake does not cause the retry loop to spawn duplicate
+        // connection attempts that churn the stable socket.
         let bootstrap_peers: Arc<Mutex<BTreeMap<PeerId, SocketAddr>>> =
             Arc::new(Mutex::new(bootstrap));
         let retry_peers = peers.clone();
         let retry_tx = event_tx.clone();
         let retry_id = local_id;
         let retry_bootstrap = bootstrap_peers.clone();
+        let dialing: Arc<Mutex<BTreeSet<PeerId>>> = Arc::new(Mutex::new(BTreeSet::new()));
         tokio::spawn(async move {
             let mut first_attempt = true;
             loop {
                 let pending: Vec<(PeerId, SocketAddr)> = {
                     let connected = retry_peers.lock().await;
+                    let dialing = dialing.lock().await;
                     retry_bootstrap
                         .lock()
                         .await
                         .iter()
                         .filter(|(peer_id, _)| {
-                            **peer_id != retry_id && !connected.contains_key(peer_id)
+                            **peer_id != retry_id
+                                && !connected.contains_key(peer_id)
+                                && !dialing.contains(peer_id)
                         })
                         .map(|(peer_id, addr)| (*peer_id, *addr))
                         .collect()
@@ -114,20 +120,13 @@ impl TcpTransport {
                     let dial_peers = retry_peers.clone();
                     let dial_tx = retry_tx.clone();
                     let dial_id = retry_id;
+                    let dial_dialing = dialing.clone();
+                    dialing.lock().await.insert(peer_id);
                     tokio::spawn(async move {
-                        match TcpStream::connect(peer_addr).await {
+                        let result = match TcpStream::connect(peer_addr).await {
                             Ok(stream) => {
-                                if let Err(e) = run_connection(
-                                    stream,
-                                    Some(peer_id),
-                                    dial_id,
-                                    dial_peers,
-                                    dial_tx,
-                                )
-                                .await
-                                {
-                                    warn!("Bootstrap connection to {} closed: {}", peer_addr, e);
-                                }
+                                run_connection(stream, Some(peer_id), dial_id, dial_peers, dial_tx)
+                                    .await
                             }
                             Err(e) => {
                                 if first_attempt {
@@ -136,8 +135,13 @@ impl TcpTransport {
                                         peer_id, peer_addr, e
                                     );
                                 }
+                                Err("connect failed")
                             }
+                        };
+                        if let Err(e) = result {
+                            warn!("Bootstrap connection to {} closed: {}", peer_addr, e);
                         }
+                        dial_dialing.lock().await.remove(&peer_id);
                     });
                 }
 
