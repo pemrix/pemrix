@@ -95,7 +95,7 @@ export function completeChatStream(
       Authorization: `Bearer ${apiKey}`,
       Accept: "text/event-stream",
       ...(settings.provider === "openrouter"
-        ? { "HTTP-Referer": window.location.href, "X-Title": "Quanvio Docs" }
+        ? { "HTTP-Referer": window.location.href, "X-Title": "PEMRIX Docs" }
         : {}),
     },
     body: JSON.stringify({

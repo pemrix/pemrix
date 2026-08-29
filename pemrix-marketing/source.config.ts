@@ -1,7 +1,11 @@
 import { defineConfig, defineDocs } from "fumadocs-mdx/config";
 import { rehypeCodeDefaultOptions } from "fumadocs-core/mdx-plugins";
 
-const AttributeRegex = /(^|\s)([a-zA-Z0-9_-]+)(?:=(?:"([^"]*)"|'([^']*)'|(\d+)))?/g;
+// Match attributes in code-block meta strings: key, key="value", key='value', or key=123.
+const AttributeRegex = new RegExp(
+  "(^|\\s)([a-zA-Z0-9_-]+)(?:=(?:\"([^\"]*)\"|'([^']*)'|(\\d+)))?",
+  "g"
+);
 
 function parseCodeBlockAttributes(
   meta: string,
@@ -39,8 +43,6 @@ function parseMetaString(meta: string) {
       continue;
     }
     if (k === "expandable" || k === "lines") {
-      // Attributes written without a value (e.g. `expandable lines`) are parsed as `null`.
-      // Treat their presence as `true` so collapsing is enabled.
       data[k] = v === null || v === "" ? true : v;
       continue;
     }
@@ -50,16 +52,7 @@ function parseMetaString(meta: string) {
   return data;
 }
 
-// One Fumadocs source per product so each product can grow independently.
-export const quanvioDocs = defineDocs({ dir: "content/docs/products/quanvio" });
-export const qoraDocs = defineDocs({ dir: "content/docs/products/qora" });
-export const qprintDocs = defineDocs({ dir: "content/docs/products/qprint" });
-export const quanposDocs = defineDocs({ dir: "content/docs/products/quanpos" });
-export const qorviaDocs = defineDocs({ dir: "content/docs/products/qorvia" });
-export const pegusDocs = defineDocs({ dir: "content/docs/products/pegus" });
-
-// Backwards-compatible alias for any code still importing `docs`.
-export const docs = quanvioDocs;
+export const pemrixDocs = defineDocs({ dir: "content/docs" });
 
 export default defineConfig({
   mdxOptions: {

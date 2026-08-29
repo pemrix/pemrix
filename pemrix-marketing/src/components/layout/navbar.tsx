@@ -1,5 +1,15 @@
 "use client";
-import { BrainIcon as Brain, GlobeIcon as Globe, HardDrivesIcon as Server, X } from "@phosphor-icons/react";
+import {
+  BrainIcon as Brain,
+  CodeIcon as Code,
+  GlobeIcon as Globe,
+  LightningIcon as Lightning,
+  LockKeyIcon as LockKey,
+  NetworkIcon as Network,
+  ShoppingCartIcon as ShoppingCart,
+  WalletIcon as Wallet,
+  X,
+} from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
@@ -23,34 +33,62 @@ import { cn } from "@/lib/utils";
 
 export const NAV_LINKS = [
   {
-    label: "Features",
+    label: "Ecosystem",
     href: "/feature",
     subitems: [
       {
-        label: "AI Pipelines",
-        href: "/feature",
-        description: "Flaky-test detection and auto-retry for your pipelines",
+        label: "Network",
+        href: "https://pemrix.com",
+        description: "The open blockchain foundation",
+        icon: Network,
+      },
+      {
+        label: "Wallet",
+        href: "https://wallet.pemrix.com",
+        description: "Self-custody wallet for PRX and identity",
+        icon: Wallet,
+      },
+      {
+        label: "Pay",
+        href: "https://pay.pemrix.com",
+        description: "QR-based checkout and merchant settlement",
+        icon: ShoppingCart,
+      },
+      {
+        label: "AI",
+        href: "https://ai.pemrix.com",
+        description: "Intelligent agents and autonomous payments",
         icon: Brain,
-      },
-      {
-        label: "Runners",
-        href: "/feature",
-        description: "Cloud and self-hosted runners for Linux, macOS, Windows, and ARM",
-        icon: Server,
-      },
-      {
-        label: "Preview Environments",
-        href: "/feature",
-        description: "Spin up isolated preview deploys for every pull request",
-        icon: Globe,
       },
     ],
   },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Docs", href: "/docs" },
-  { label: "Changelog", href: "/changelog" },
+  {
+    label: "Developers",
+    href: "/docs/pemrix/developers",
+    subitems: [
+      {
+        label: "Run a validator",
+        href: "/docs/pemrix/developers/validator",
+        description: "Secure the network and earn rewards",
+        icon: LockKey,
+      },
+      {
+        label: "Build apps",
+        href: "/docs/pemrix/developers/build-apps",
+        description: "SDKs, RPC APIs, and starter guides",
+        icon: Code,
+      },
+      {
+        label: "Network stats",
+        href: "/status",
+        description: "Uptime, transactions, and validator health",
+        icon: Lightning,
+      },
+    ],
+  },
+  { label: "Docs", href: "/docs/pemrix" },
   { label: "About", href: "/about" },
-  { label: "Download", href: "/download" },
+  { label: "Blog", href: "/blog" },
 ];
 
 const ACTION_BUTTONS = [

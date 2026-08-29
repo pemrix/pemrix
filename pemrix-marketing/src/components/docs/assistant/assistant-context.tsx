@@ -34,7 +34,7 @@ type AssistantContextValue = {
 
 const AssistantContext = React.createContext<AssistantContextValue | null>(null);
 
-const STORAGE_KEY_UI = "quanvio-assistant-ui-v1";
+const STORAGE_KEY_UI = "pemrix-assistant-ui-v1";
 const PANEL_WIDTH = 420;
 const PANEL_HEIGHT = 640;
 

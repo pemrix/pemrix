@@ -1,0 +1,30 @@
+---
+title: Run a validator
+description: How to run a PEMRIX validator node and earn rewards.
+---
+
+# Run a validator
+
+Validators secure the PEMRIX network by proposing and validating blocks. In return, they earn PRX rewards.
+
+## Requirements
+
+- Reliable server with a static IP
+- Minimum hardware: 4 CPU cores, 16 GB RAM, 500 GB SSD
+- Stake PRX to participate in consensus
+
+## Quick start
+
+```bash
+curl -fsSL https://pemrix.com/install-node.sh | bash
+pemrix-node init --network=mainnet
+pemrix-node start
+```
+
+## Staking and rewards
+
+Once your node is synced, delegate or self-stake PRX to begin earning rewards. Rewards are distributed based on participation and stake weight.
+
+## Monitoring
+
+Use the [network status page](/status) and node metrics dashboard to monitor health and performance.

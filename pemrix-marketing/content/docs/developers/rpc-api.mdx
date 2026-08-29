@@ -1,0 +1,31 @@
+---
+title: RPC API
+description: PEMRIX JSON-RPC and REST API reference overview.
+---
+
+# RPC API
+
+PEMRIX nodes expose JSON-RPC and REST endpoints for reading chain state and submitting transactions.
+
+## Endpoints
+
+- Mainnet: `https://rpc.mainnet.pemrix.com`
+- Testnet: `https://rpc.testnet.pemrix.com`
+
+## Common methods
+
+| Method | Description |
+| --- | --- |
+| `getBlock` | Fetch a block by height or hash |
+| `getBalance` | Get account balance |
+| `sendTransaction` | Submit a signed transaction |
+| `getTransaction` | Fetch transaction details |
+| `getValidators` | List active validators |
+
+## Authentication
+
+Public RPC endpoints are rate-limited. For production traffic, run your own node or use a dedicated endpoint.
+
+## SDKs
+
+For typed clients, see the [SDKs](./sdks) page.

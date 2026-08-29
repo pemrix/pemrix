@@ -32,12 +32,17 @@ export function DocsSidebarBanner() {
     <div className="flex items-center justify-between md:hidden">
       <Link href="/" className="flex items-center gap-2">
         <img
-          src="/layout/logo.svg"
-          alt="Quanvio"
-          className="docs-logo h-6 w-auto"
+          src="/logos/pemrix-black.svg"
+          alt="PEMRIX"
+          className="docs-logo h-6 w-auto dark:hidden"
+        />
+        <img
+          src="/logos/pemrix-white.svg"
+          alt="PEMRIX"
+          className="docs-logo hidden h-6 w-auto dark:block"
         />
         <span className="text-lg font-semibold tracking-tight text-foreground">
-          Quanvio
+          PEMRIX
         </span>
       </Link>
       <ThemeToggle />

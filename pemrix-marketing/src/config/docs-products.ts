@@ -1,19 +1,7 @@
 import type { LucideIcon } from "lucide-react";
-import {
-  BookOpen,
-  Bot,
-  Box,
-  Code2,
-  type IconNode,
-} from "lucide-react";
+import { BookOpen, Code2, Box, Bot, GraduationCap, Wallet, ShoppingCart, Users } from "lucide-react";
 
-export type DocsProductId =
-  | "quanvio"
-  | "qora"
-  | "qprint"
-  | "quanpos"
-  | "qorvia"
-  | "pegus";
+export type DocsProductId = "pemrix";
 
 export interface DocsProductSection {
   id: string;
@@ -38,79 +26,37 @@ export interface DocsProductConfig {
   sections: DocsProductSection[];
 }
 
-const commonSections: DocsProductSection[] = [
-  { id: "docs", title: "Docs", href: "/docs/{product}", icon: BookOpen },
-  { id: "api-reference", title: "API Reference", href: "/docs/{product}/api-reference", icon: Code2 },
-  { id: "client-sdks", title: "Client SDKs", href: "/docs/{product}/client-sdks", icon: Box },
-];
-
 export const docsProductsConfig: Record<DocsProductId, DocsProductConfig> = {
-  quanvio: {
-    id: "quanvio",
-    name: "Quanvio",
-    shortName: "Quanvio",
-    logo: { light: "/logos/quanvio-light.svg", dark: "/logos/quanvio-dark.svg", alt: "Quanvio" },
-    brandColor: "#ea580c",
-    description: "Business operations & analytics platform documentation.",
+  pemrix: {
+    id: "pemrix",
+    name: "PEMRIX",
+    shortName: "PEMRIX",
+    logo: { light: "/logos/pemrix-black.svg", dark: "/logos/pemrix-white.svg", alt: "PEMRIX" },
+    brandColor: "#005fff",
+    description: "The open network for value.",
     sections: [
-      ...commonSections,
-      { id: "agent-sdk", title: "Agent SDK", href: "/docs/{product}/agent-sdk", icon: Bot },
-      { id: "cookbook", title: "Cookbook", href: "/docs/{product}/cookbook", icon: BookOpen },
+      { id: "learn", title: "Learn", href: "/docs/pemrix/learn", icon: GraduationCap },
+      { id: "use", title: "Use", href: "/docs/pemrix/use", icon: Wallet },
+      { id: "developers", title: "Developers", href: "/docs/pemrix/developers", icon: Code2 },
+      { id: "community", title: "Community", href: "/docs/pemrix/community", icon: Users },
+      { id: "docs", title: "Docs", href: "/docs/pemrix", icon: BookOpen },
+      { id: "client-sdks", title: "Client SDKs", href: "/docs/pemrix/developers/sdks", icon: Box },
+      { id: "validators", title: "Validators", href: "/docs/pemrix/developers/validator", icon: Bot },
     ],
-  },
-  qora: {
-    id: "qora",
-    name: "Qora",
-    shortName: "Qora",
-    logo: { light: "/logos/qora-light.svg", dark: "/logos/qora-dark.svg", alt: "Qora" },
-    brandColor: "#333333",
-    description: "Developer platform & API reference guides.",
-    sections: commonSections,
-  },
-  qprint: {
-    id: "qprint",
-    name: "Qprint",
-    shortName: "Qprint",
-    logo: { light: "/logos/qprint-light.svg", dark: "/logos/qprint-dark.svg", alt: "Qprint" },
-    brandColor: "#2563eb",
-    description: "Print management & document automation docs.",
-    sections: commonSections,
-  },
-  quanpos: {
-    id: "quanpos",
-    name: "Quanpos",
-    shortName: "Quanpos",
-    logo: { light: "/logos/quanpos-light.svg", dark: "/logos/quanpos-dark.svg", alt: "Quanpos" },
-    brandColor: "#059669",
-    description: "Point of sale & retail management docs.",
-    sections: commonSections,
-  },
-  qorvia: {
-    id: "qorvia",
-    name: "Qorvia",
-    shortName: "Qorvia",
-    logo: { light: "/logos/qorvia.png", alt: "Qorvia" },
-    brandColor: "#7c3aed",
-    description: "Customer support & helpdesk platform docs.",
-    sections: commonSections,
-  },
-  pegus: {
-    id: "pegus",
-    name: "Pegus",
-    shortName: "Pegus",
-    logo: { light: "/logos/pegus-light.svg", dark: "/logos/pegus-dark.svg", alt: "Pegus" },
-    brandColor: "#dc2626",
-    description: "Data storage & infrastructure documentation.",
-    sections: commonSections,
   },
 };
 
-export const docsProductIds = Object.keys(docsProductsConfig) as DocsProductId[];
+export const docsProductIds: DocsProductId[] = ["pemrix"];
+export const defaultProduct: DocsProductId = "pemrix";
 
-export function getDocsProductConfig(product: string): DocsProductConfig | null {
-  return docsProductsConfig[product as DocsProductId] ?? null;
+export function isDocsProduct(value: string): value is DocsProductId {
+  return docsProductIds.includes(value as DocsProductId);
+}
+
+export function getDocsProductConfig(product: DocsProductId): DocsProductConfig {
+  return docsProductsConfig[product];
 }
 
 export function fillProductHref(href: string, product: DocsProductId): string {
-  return href.replace(/{product}/g, product);
+  return href.replaceAll("{product}", product);
 }

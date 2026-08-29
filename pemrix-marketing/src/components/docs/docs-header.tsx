@@ -29,6 +29,7 @@ import {
   docsProductsConfig,
   fillProductHref,
   getDocsProductConfig,
+  type DocsProductId,
 } from "@/config/docs-products";
 import Logo from "@/components/layout/logo";
 import { getDocsPath } from "@/lib/docs-i18n";
@@ -74,7 +75,7 @@ function AccountButton() {
 function GithubButton() {
   return (
     <a
-      href="https://github.com/quanvio"
+      href="https://github.com/pemrix"
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center justify-center rounded-md p-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -108,7 +109,7 @@ function AskAssistantButton() {
   );
 }
 
-const defaultProduct = "quanvio";
+const defaultProduct: DocsProductId = "pemrix";
 
 export function DocsHeader() {
   const t = useTranslations("docs");
@@ -153,19 +154,19 @@ export function DocsHeader() {
         </SidebarTrigger>
 
         <Link href={getDocsPath(locale, `/docs/${product}`)} className="flex items-center gap-2">
-          {product === "quanvio" ? (
+          {product === "pemrix" ? (
             <Logo noLink className="text-lg" iconClassName="size-6" isDark={isDark} />
           ) : (
             <>
               <ProductLogo
                 light={productConfig?.logo?.light ?? "/layout/logo.svg"}
                 dark={productConfig?.logo?.dark}
-                alt={productConfig?.logo?.alt ?? productConfig?.shortName ?? "Quanvio"}
+                alt={productConfig?.logo?.alt ?? productConfig?.shortName ?? "PEMRIX"}
                 className="h-6 w-auto"
                 isDark={isDark}
               />
               <span className="text-lg font-semibold tracking-tight text-foreground">
-                {productConfig?.shortName ?? "Quanvio"}
+                {productConfig?.shortName ?? "PEMRIX"}
               </span>
             </>
           )}

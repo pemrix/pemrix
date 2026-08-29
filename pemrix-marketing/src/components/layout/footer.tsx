@@ -10,36 +10,39 @@ import { CopyButton } from "@/components/ui/copy-button";
 
 const FOOTER_LINKS = [
   {
-    title: "Product",
+    title: "Network",
     links: [
-      { label: "Features", href: "/feature" },
-      { label: "Pricing", href: "/pricing" },
-      { label: "Download", href: "/download" },
-      { label: "Changelog", href: "/changelog" },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "Documentation", href: "/docs/getting-started" },
-      { label: "API reference", href: "/docs/api-reference" },
+      { label: "What is PEMRIX", href: "/docs/pemrix/learn/what-is-pemrix" },
+      { label: "Ecosystem", href: "/feature" },
       { label: "Status", href: "/status" },
+      { label: "Governance", href: "https://governance.pemrix.com" },
     ],
   },
   {
-    title: "Company",
+    title: "Use",
     links: [
-      { label: "About", href: "/about" },
+      { label: "Get PRX", href: "/docs/pemrix/use/get-prx" },
+      { label: "Wallets", href: "/docs/pemrix/use/wallets" },
+      { label: "Pay with PEMRIX", href: "/docs/pemrix/use/pay" },
+      { label: "Merchant checkout", href: "/docs/pemrix/use/merchant" },
+    ],
+  },
+  {
+    title: "Developers",
+    links: [
+      { label: "Documentation", href: "/docs/pemrix" },
+      { label: "Run a validator", href: "/docs/pemrix/developers/validator" },
+      { label: "Build apps", href: "/docs/pemrix/developers/build-apps" },
+      { label: "SDKs", href: "/docs/pemrix/developers/sdks" },
+    ],
+  },
+  {
+    title: "Community",
+    links: [
+      { label: "Online communities", href: "/docs/pemrix/community/online" },
+      { label: "Events", href: "/docs/pemrix/community/events" },
+      { label: "Contribute", href: "/docs/pemrix/community/contribute" },
       { label: "Blog", href: "/blog" },
-      { label: "Contact", href: "/contact" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
-      { label: "Security", href: "/security" },
     ],
   },
 ];
@@ -47,12 +50,12 @@ const FOOTER_LINKS = [
 const SOCIAL_LINKS = [
   {
     name: "GitHub",
-    href: "https://github.com/cruip",
+    href: "https://github.com/pemrix",
     icon: <GithubLogoIcon className="size-4" />,
   },
   {
     name: "X",
-    href: "https://x.com/Cruip_com",
+    href: "https://x.com/pemrix",
     icon: <XLogoIcon className="size-4" />,
   },
   {
@@ -62,7 +65,7 @@ const SOCIAL_LINKS = [
   },
 ];
 
-const INSTALL_CMD = "curl -fsSL https://quanvio.com/install | sh";
+const INSTALL_CMD = "curl -fsSL https://pemrix.com/install-node.sh | bash";
 
 const Footer = () => {
   const pathname = usePathname();
@@ -76,17 +79,17 @@ const Footer = () => {
         {/* Developer download CTA — install from the terminal */}
         <div className="bg-muted/50 border-border/70 dark:bg-card/45 dark:border-foreground/10 flex flex-col gap-8 rounded-2xl border p-8 shadow-[inset_0_1px_0_oklch(1_0_0/0.55)] lg:flex-row lg:items-center lg:justify-between lg:p-12 dark:shadow-[inset_0_1px_0_oklch(1_0_0/0.10)] dark:backdrop-blur-md">
           <div className="max-w-md space-y-3">
-            <h2 className="text-2xl font-medium tracking-tight lg:text-3xl">Ship with Quanvio</h2>
+            <h2 className="text-2xl font-medium tracking-tight lg:text-3xl">Run the network</h2>
             <p className="text-muted-foreground">
-              The intelligence layer for work. One platform, powerful products for every team.
+              Join thousands of validators securing the open network for value.
             </p>
             <div className="flex flex-wrap gap-3 pt-2">
               <Button
                 className="bg-secondary hover:bg-secondary/90 text-secondary-foreground h-14.5 gap-2.5 rounded-full px-6 text-base"
                 asChild
               >
-                <Link href="/download">
-                  Get started
+                <Link href="/docs/pemrix/developers/validator">
+                  Run a validator
                   <Download className="size-4 shrink-0" />
                 </Link>
               </Button>
@@ -95,7 +98,7 @@ const Footer = () => {
                 className="border-secondary/30 hover:border-secondary/50 hover:bg-secondary/5 h-14.5 gap-2.5 rounded-full px-6 text-base"
                 asChild
               >
-                <Link href="https://github.com" target="_blank" rel="noopener noreferrer">
+                <Link href="https://github.com/pemrix" target="_blank" rel="noopener noreferrer">
                   Star on GitHub
                   <GithubLogoIcon className="size-4 shrink-0" />
                 </Link>
@@ -109,7 +112,7 @@ const Footer = () => {
               <code className="text-foreground/90 flex-1 truncate">{INSTALL_CMD}</code>
               <CopyButton text={INSTALL_CMD} className="size-8 shrink-0" />
             </div>
-            <p className="text-muted-foreground mt-2.5 text-xs">Native-fast AI editor & terminal agent</p>
+            <p className="text-muted-foreground mt-2.5 text-xs">One-command PEMRIX node installer</p>
           </div>
         </div>
 
@@ -118,7 +121,8 @@ const Footer = () => {
           <div className="space-y-5">
             <Logo className="text-2xl" iconClassName="w-7" />
             <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-              Quanvio is building the intelligence layer for work. One platform, powerful products for every team.
+              PEMRIX is the open network for value: fast, secure, and decentralized infrastructure for payments and
+              AI-native apps.
             </p>
             <div className="flex items-center gap-3">
               {SOCIAL_LINKS.map((link) => (
@@ -162,16 +166,16 @@ const Footer = () => {
           <p>
             ©{" "}
             <a
-              href="https://quanvio.com"
+              href="https://pemrix.com"
               target="_blank"
               rel="noopener"
               className="text-foreground/80 hover:text-secondary transition-colors"
             >
-              Quanvio Lab
+              PEMRIX Labs
             </a>{" "}
             - All rights reserved.
           </p>
-          <p className="text-muted-foreground font-mono text-xs">Built for builders · quanvio --version 0.1.0</p>
+          <p className="text-muted-foreground font-mono text-xs">The Open Network for Value · pemrix --version 0.1.0</p>
         </div>
       </div>
 

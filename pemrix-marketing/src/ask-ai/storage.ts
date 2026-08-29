@@ -5,7 +5,7 @@ import {
   PROVIDER_DEFAULTS,
 } from "@/ask-ai/types";
 
-const STORAGE_KEY = "quanvio-assistant-v1";
+const STORAGE_KEY = "pemrix-assistant-v1";
 const MAX_MESSAGES = 50;
 
 function getDefaultSettings(): AskAiSettings {

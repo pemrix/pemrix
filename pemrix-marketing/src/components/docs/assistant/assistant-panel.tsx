@@ -83,12 +83,7 @@ function stripFrontmatter(md: string): string {
 
 function getQuickLinks(ctx: { product: string; title: string; section?: string }): string[] {
   const productNames: Record<string, string> = {
-    quanvio: "Quanvio",
-    qora: "Qora",
-    qprint: "Qprint",
-    quanpos: "Quanpos",
-    qorvia: "Qorvia",
-    pegus: "Pegus",
+    pemrix: "PEMRIX",
   };
   const name = productNames[ctx.product] ?? ctx.product;
   return [
@@ -148,7 +143,7 @@ export function AssistantPanel() {
   const activePageContext = React.useMemo(
     () =>
       pageContext ?? {
-        product: getDocsSlugFromPathname(pathname ?? "")?.split("/")[0] ?? "quanvio",
+        product: getDocsSlugFromPathname(pathname ?? "")?.split("/")[0] ?? "pemrix",
         title: documentTitle,
         url: typeof window !== "undefined" ? window.location.href : "",
         section: currentSection,

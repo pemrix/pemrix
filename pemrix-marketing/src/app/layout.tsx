@@ -18,17 +18,31 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://quanvio.com"),
+  metadataBase: new URL("https://pemrix.com"),
   title: {
-    default: "Quanvio — Intelligence Layer for Work",
-    template: "%s | Quanvio",
+    default: "PEMRIX — The Open Network for Value",
+    template: "%s | PEMRIX",
   },
   description:
-    "Quanvio is building the intelligence layer for work. One platform, powerful products: Qora, Qprint, Quanpos, Qorvia, Pegus, and more.",
-  keywords: ["Quanvio", "AI platform", "productivity", "Qora", "Qprint", "Quanpos", "Qorvia", "Pegus"],
-  authors: [{ name: "Quanvio", url: "https://quanvio.com" }],
-  creator: "Quanvio",
-  publisher: "Quanvio",
+    "PEMRIX is the open network for value: a fast, secure, and decentralized blockchain for payments, AI-native apps, and global commerce.",
+  keywords: [
+    "PEMRIX",
+    "PRX",
+    "blockchain",
+    "cryptocurrency",
+    "payments",
+    "DeFi",
+    "AI agents",
+    "Web3",
+    "validator",
+    "wallet",
+    "merchant",
+    "exchange",
+    "governance",
+  ],
+  authors: [{ name: "PEMRIX Labs", url: "https://pemrix.com" }],
+  creator: "PEMRIX Labs",
+  publisher: "PEMRIX Labs",
   robots: {
     index: true,
     follow: true,
@@ -43,26 +57,26 @@ export const metadata: Metadata = {
     shortcut: [{ url: "/favicon/favicon.ico?v=1" }],
   },
   openGraph: {
-    title: "Quanvio — Intelligence Layer for Work",
+    title: "PEMRIX — The Open Network for Value",
     description:
-      "Quanvio is building the intelligence layer for work. One platform, powerful products: Qora, Qprint, Quanpos, Qorvia, Pegus, and more.",
-    siteName: "Quanvio",
+      "PEMRIX is the open network for value: a fast, secure, and decentralized blockchain for payments, AI-native apps, and global commerce.",
+    siteName: "PEMRIX",
     images: [
       {
         url: "/images/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Quanvio — Intelligence Layer for Work",
+        alt: "PEMRIX — The Open Network for Value",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Quanvio — Intelligence Layer for Work",
+    title: "PEMRIX — The Open Network for Value",
     description:
-      "Quanvio is building the intelligence layer for work. One platform, powerful products: Qora, Qprint, Quanpos, Qorvia, Pegus, and more.",
+      "PEMRIX is the open network for value: a fast, secure, and decentralized blockchain for payments, AI-native apps, and global commerce.",
     images: ["/images/og-image.jpg"],
-    creator: "@quanvio",
+    creator: "@pemrix",
   },
 };
 

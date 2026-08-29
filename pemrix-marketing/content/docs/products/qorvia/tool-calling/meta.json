@@ -1,9 +1,0 @@
-{
-  "title": "Tool Calling",
-  "pages": [
-    "tool-calling",
-    "server-tools",
-    "plugins"
-  ],
-  "icon": "wrench"
-}

@@ -12,7 +12,8 @@ import { DocsHtmlAttributes } from "@/components/docs/docs-html-attributes";
 import { DocsSidebarBanner } from "@/components/docs/docs-sidebar-banner";
 import { EmptySlot } from "@/components/docs/empty-slot";
 import { routing, RTL_LOCALES } from "@/i18n/routing";
-import { getDocsSource, isDocsProduct } from "@/lib/docs-source";
+import { getDocsSource } from "@/lib/docs-source";
+import { defaultProduct } from "@/config/docs-products";
 
 export default async function Layout({
   children,
@@ -29,8 +30,7 @@ export default async function Layout({
   const messages = await getMessages();
   const dir = RTL_LOCALES.has(locale) ? "rtl" : "ltr";
 
-  const docsProduct = product && isDocsProduct(product) ? product : "quanvio";
-  const source = getDocsSource(docsProduct);
+  const source = getDocsSource();
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>

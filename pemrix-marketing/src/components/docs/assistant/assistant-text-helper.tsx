@@ -7,7 +7,7 @@ import { useAssistant } from "@/components/docs/assistant/assistant-context";
 
 function getPageContext() {
   const productMatch = window.location.pathname.match(/\/docs\/([^/]+)/);
-  const product = productMatch?.[1] ?? "quanvio";
+  const product = productMatch?.[1] ?? "pemrix";
   const title = document.title || document.querySelector("h1")?.textContent?.trim() || "";
   let section = "";
   const headings = Array.from(document.querySelectorAll("h2, h3"));

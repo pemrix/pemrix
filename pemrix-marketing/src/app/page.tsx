@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 
-import AIAutomation from "@/components/sections/ai-automation";
-import FeatureCards from "@/components/sections/feature-cards";
-import Features from "@/components/sections/features";
-import FeaturesTabsSection from "@/components/sections/features-tabs";
+import BuiltForFuture from "@/components/sections/built-for-future";
+import Ecosystem from "@/components/sections/ecosystem";
+import FeatureGrid from "@/components/sections/feature-grid";
 import Hero from "@/components/sections/hero";
-import Testimonials from "@/components/sections/testimonials";
+import Principles from "@/components/sections/principles";
+import Stats from "@/components/sections/stats";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Quanvio — Intelligence Layer for Work",
+    absolute: "PEMRIX — The Open Network for Value",
   },
 };
 
@@ -17,11 +17,11 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <Features />
-      <FeatureCards />
-      <AIAutomation />
-      <FeaturesTabsSection />
-      <Testimonials />
+      <Principles />
+      <FeatureGrid />
+      <Ecosystem />
+      <Stats />
+      <BuiltForFuture />
     </>
   );
 }

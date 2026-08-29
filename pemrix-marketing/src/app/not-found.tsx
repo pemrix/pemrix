@@ -7,10 +7,10 @@ export default function NotFoundPage() {
   return (
     <section className="section-padding relative flex items-center justify-center">
       <div className="relative container flex max-w-4xl flex-col items-center text-center">
-        {/* Quanvio Logo */}
+        {/* PEMRIX Logo */}
         <div
           role="img"
-          aria-label="Quanvio Logo"
+          aria-label="PEMRIX Logo"
           style={{
             maskImage: "url(/layout/logo.svg)",
             WebkitMaskImage: "url(/layout/logo.svg)",

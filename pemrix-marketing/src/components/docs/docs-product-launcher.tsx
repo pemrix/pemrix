@@ -35,7 +35,7 @@ export function DocsProductLauncher({ className }: { className?: string }) {
 
   const currentProduct = React.useMemo(() => {
     const match = pathname.match(/^\/docs\/([^/]+)/);
-    return match ? match[1] : "quanvio";
+    return match ? match[1] : "pemrix";
   }, [pathname]);
 
   const openLauncher = React.useCallback(() => {

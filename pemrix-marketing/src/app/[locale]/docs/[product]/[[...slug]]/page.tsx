@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import { DocsLandingPage } from "@/components/docs/docs-landing-page";
 import { PageActionsDropdown } from "@/components/docs/page-actions-dropdown";
 import { getMDXComponents } from "@/components/mdx-components";
-import { getDocsProductConfig } from "@/config/docs-products";
+import { getDocsProductConfig, docsProductIds, isDocsProduct } from "@/config/docs-products";
 import { routing } from "@/i18n/routing";
-import { getDocsSource, isDocsProduct } from "@/lib/docs-source";
+import { getDocsSource } from "@/lib/docs-source";
 
 export default async function Page(props: {
   params: Promise<{ locale: string; product: string; slug?: string[] }>;
@@ -21,7 +21,7 @@ export default async function Page(props: {
     notFound();
   }
 
-  const source = getDocsSource(params.product);
+  const source = getDocsSource();
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
@@ -48,7 +48,7 @@ export default async function Page(props: {
   }
 
   const MDX = page.data.body;
-  const markdownUrl = `/api/docs/markdown?slug=products/${params.product}/${page.slugs.join(",")}`;
+  const markdownUrl = `/api/docs/markdown?slug=${page.slugs.join(",")}`;
 
   return (
     <DocsPage
@@ -74,13 +74,12 @@ export default async function Page(props: {
 }
 
 export async function generateStaticParams() {
-  const { docsProductIds } = await import("@/config/docs-products");
   const params: { locale: string; product: string; slug?: string[] }[] = [];
 
   for (const locale of routing.locales) {
     for (const product of docsProductIds) {
       const { getDocsSource } = await import("@/lib/docs-source");
-      const source = getDocsSource(product);
+      const source = getDocsSource();
       const pages = source.generateParams();
       for (const p of pages) {
         params.push({ locale, product, slug: p.slug ?? [] });
@@ -100,7 +99,7 @@ export async function generateMetadata(props: {
     notFound();
   }
 
-  const source = getDocsSource(params.product);
+  const source = getDocsSource();
   const page = source.getPage(params.slug);
   if (!page) notFound();
 

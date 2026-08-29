@@ -2,16 +2,17 @@
 
 import {
   BookOpen,
-  Brain,
-  Database,
+  Code,
   DotsNine,
-  Gear,
-  Headset,
+  Globe,
   House,
   MagnifyingGlass,
-  Printer,
   Robot,
   ShoppingCart,
+  Storefront,
+  TrendUp,
+  Users,
+  Wallet,
   X,
   type Icon,
 } from "@phosphor-icons/react";
@@ -24,18 +25,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ProductLogo } from "@/components/docs/product-logo";
-import { quanvioProducts, type QuanvioProduct } from "@/data/products";
+import { pemrixProducts, type PemrixProduct } from "@/data/products";
 import { cn } from "@/lib/utils";
 
 const ANIMATION_DURATION = 360;
 
 const productIcons: Record<string, Icon> = {
-  qora: Robot,
-  qprint: Printer,
-  quanpos: ShoppingCart,
-  qorvia: Headset,
-  pegus: Database,
-  quanvio: Gear,
+  pemrix: Globe,
+  wallet: Wallet,
+  pay: ShoppingCart,
+  merchant: Storefront,
+  exchange: TrendUp,
+  developer: Code,
+  ai: Robot,
+  governance: Users,
   docs: BookOpen,
   home: House,
 };
@@ -48,12 +51,12 @@ function getHostname(href: string) {
   }
 }
 
-function isCurrentProduct(product: QuanvioProduct) {
+function isCurrentProduct(product: PemrixProduct) {
   if (typeof window === "undefined") return false;
   return window.location.hostname === getHostname(product.href);
 }
 
-function StatusBadge({ status }: { status?: QuanvioProduct["status"] }) {
+function StatusBadge({ status }: { status?: PemrixProduct["status"] }) {
   if (!status || status === "live") return null;
 
   const labels = { beta: "BETA", new: "NEW" };
@@ -79,11 +82,11 @@ function AppIcon({
   onClick,
   isDark,
 }: {
-  product: QuanvioProduct;
+  product: PemrixProduct;
   onClick?: () => void;
   isDark: boolean;
 }) {
-  const Icon = productIcons[product.id] || Brain;
+  const Icon = productIcons[product.id] || Robot;
   const current = isCurrentProduct(product);
   const [from, to] = product.gradient || [product.color, product.color];
   const hasLogo = Boolean(product.logo?.light);
@@ -167,7 +170,7 @@ function LauncherContent({
   onClose,
   isDark,
 }: {
-  onSelect: (product: QuanvioProduct) => void;
+  onSelect: (product: PemrixProduct) => void;
   onClose: () => void;
   isDark: boolean;
 }) {
@@ -209,8 +212,8 @@ function LauncherContent({
 
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return quanvioProducts;
-    return quanvioProducts.filter(
+    if (!q) return pemrixProducts;
+    return pemrixProducts.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.tagline.toLowerCase().includes(q) ||
@@ -344,7 +347,7 @@ function LauncherContent({
 
       <div className="mt-4 flex justify-center">
         <Link
-          href="https://quanvio.com/products"
+          href="https://pemrix.com"
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
@@ -354,7 +357,7 @@ function LauncherContent({
               : "text-black/40 hover:bg-black/5 hover:text-foreground",
           )}
         >
-          View all products
+          pemrix.com
         </Link>
       </div>
     </div>
@@ -417,7 +420,7 @@ export function ProductLauncher({ className }: { className?: string }) {
           "text-muted-foreground hover:bg-accent hover:text-foreground size-9 rounded-lg",
           className,
         )}
-        aria-label="Quanvio products"
+        aria-label="PEMRIX products"
       >
         <DotsNine className="size-5" weight="regular" />
       </Button>

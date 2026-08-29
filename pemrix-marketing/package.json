@@ -1,9 +1,9 @@
 {
-  "name": "quanvio-marketing",
+  "name": "pemrix-marketing",
   "version": "1.0.0",
   "private": true,
-  "author": "Quanvio",
-  "license": "Quanvio Premium License",
+  "author": "Quanvio Labs",
+  "license": "MIT OR Apache-2.0",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

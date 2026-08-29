@@ -320,7 +320,7 @@ export function ProductSearchLauncher({
                         </h3>
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                           <QuickAction
-                            href={getDocsPath(locale, "/docs/quanvio/changelog")}
+                            href={getDocsPath(locale, "/docs")}
                             icon={Newspaper}
                             title="What\'s new"
                             subtitle="Latest updates"
@@ -328,7 +328,7 @@ export function ProductSearchLauncher({
                             onClick={closeLauncher}
                           />
                           <QuickAction
-                            href={getDocsPath(locale, "/docs/quanvio/overview/quickstart")}
+                            href={getDocsPath(locale, "/docs/getting-started")}
                             icon={BookOpen}
                             title="Guides"
                             subtitle="Step-by-step"
@@ -425,7 +425,7 @@ function ProductCard({
   isDark: boolean;
   onClick: () => void;
 }) {
-  const active = product.id === "quanvio";
+  const active = product.id === "pemrix";
 
   return (
     <Link

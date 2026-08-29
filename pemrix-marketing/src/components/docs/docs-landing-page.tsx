@@ -19,7 +19,6 @@ import type { Folder, Item, Node, Root } from "fumadocs-core/page-tree";
 
 import {
   docsProductsConfig,
-  fillProductHref,
   type DocsProductId,
 } from "@/config/docs-products";
 import { getDocsPath } from "@/lib/docs-i18n";
@@ -53,23 +52,23 @@ function getQuickLinks(product: DocsProductId, locale: string) {
   return [
     {
       title: "Quickstart",
-      href: getDocsPath(locale, fillProductHref("/docs/{product}/overview/quickstart", product)),
-      description: "Make your first API call in under 5 minutes.",
+      href: getDocsPath(locale, "/docs/getting-started"),
+      description: "Install PEMRIX and join the testnet in minutes.",
     },
     {
-      title: "Models & Routing",
-      href: getDocsPath(locale, fillProductHref("/docs/{product}/models-routing/provider-selection", product)),
-      description: "Pick the right model and route requests intelligently.",
+      title: "Validators",
+      href: getDocsPath(locale, "/docs/validators"),
+      description: "Run a validator node and secure the network.",
     },
     {
       title: "API Reference",
-      href: getDocsPath(locale, fillProductHref("/docs/{product}/api-reference/chat-completion", product)),
-      description: "Explore endpoints, parameters, and response schemas.",
+      href: getDocsPath(locale, "/docs/api"),
+      description: "Explore RPC endpoints and response schemas.",
     },
     {
-      title: "Client SDKs",
-      href: getDocsPath(locale, fillProductHref("/docs/{product}/client-sdks/overview", product)),
-      description: "Official libraries for Python, TypeScript, and more.",
+      title: "Developers",
+      href: getDocsPath(locale, "/docs/developers"),
+      description: "Official SDKs and integration guides.",
     },
   ];
 }
@@ -86,7 +85,7 @@ export function DocsLandingPage({ pageTree, product }: DocsLandingPageProps) {
 
   const categories = pageTree.children.filter(isFolder);
   const productConfig = docsProductsConfig[product];
-  const productName = productConfig?.name ?? "Quanvio";
+  const productName = productConfig?.name ?? "PEMRIX";
   const quickLinks = getQuickLinks(product, locale);
 
   return (
@@ -127,7 +126,7 @@ export function DocsLandingPage({ pageTree, product }: DocsLandingPageProps) {
               className="h-11 gap-2 rounded-full border-fd-border px-6 bg-fd-background hover:bg-fd-accent/5 hover:text-[var(--docs-accent)]"
               asChild
             >
-              <Link href={fillProductHref("/docs/{product}/overview/quickstart", product)}>
+              <Link href="/docs/getting-started">
                 <Rocket className="size-4" />
                 {t("landing.quickstart")}
               </Link>
@@ -246,7 +245,7 @@ export function DocsLandingPage({ pageTree, product }: DocsLandingPageProps) {
             className="h-11 gap-2 rounded-full bg-[var(--docs-accent)] px-6 text-white hover:bg-[var(--docs-accent)]/90"
             asChild
           >
-            <Link href={getDocsPath(locale, fillProductHref("/docs/{product}/api-reference/chat-completion", product))}>
+            <Link href={getDocsPath(locale, "/docs/api")}>
               {t("landing.apiReference")}
               <ArrowRight className="size-4" />
             </Link>

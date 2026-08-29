@@ -10,7 +10,7 @@ export default async function DocsIndexPage({
   const { locale } = await params;
   const prefix =
     locale === routing.defaultLocale ? "" : `/${locale}`;
-  redirect(`${prefix}/docs/quanvio`);
+  redirect(`${prefix}/docs/pemrix`);
 }
 
 export async function generateStaticParams() {
