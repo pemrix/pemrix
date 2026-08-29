@@ -40,3 +40,5 @@ private/
 docs/PEMRIX_FAQ.md
 
 systemd/pemrix-marketing.service
+
+private/
