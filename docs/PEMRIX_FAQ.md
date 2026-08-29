@@ -684,10 +684,47 @@ This is similar to how mining pools operate in Bitcoin.
 
 ---
 
-## 18. Document Control
+## 18. Can Any Country Block PEMRIX?
+
+A country can block local fiat on-ramps, app stores, and exchange access, but it cannot stop the global validator network. Users with existing wallets can still transact peer-to-peer. The protocol has no single server to shut down.
+
+## 19. Is PEMRIX Permissionless, Yet Regulated?
+
+Yes. The base blockchain is permissionless and global. The interfaces that touch fiat money (exchanges, payment partners, on-ramps) are regulated locally. This separation is intentional: openness at the protocol layer, compliance at the service layer.
+
+## 20. What Is the Role of Quanvio Labs After Mainnet?
+
+Quanvio Labs originates the technology and builds products on top of PEMRIX, but it does not own or control the network. Over time, governance moves to validators, token holders, and the PEMRIX Foundation.
+
+## 21. How Is PEMRIX Promoted?
+
+Promotion happens organically and through ecosystem building:
+- User-friendly wallet and merchant apps.
+- Developer grants and hackathons.
+- Merchant onboarding incentives.
+- Exchange listings and liquidity partnerships.
+- Educational content and university partnerships.
+- Community governance and ambassador programs.
+
+No single company controls the narrative; the ecosystem does.
+
+## 22. Can Anyone Build a Wallet on Top of PEMRIX?
+
+Yes. PEMRIX is open-source and permissionless. Anyone can build:
+- Mobile wallets.
+- Web wallets.
+- Hardware wallet integrations.
+- Merchant POS apps.
+- Exchange integrations.
+- AI agent wallets.
+
+The benefit to builders is the same as building on Bitcoin or Ethereum: access to a global, open settlement network. The benefit to PEMRIX is more choice, more security through client diversity, and faster adoption.
+
+## 23. Document Control
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
+| 1.6 | 2026-08-30 | Kimi Code / Quanvio Labs | Added country blocking, permissionless vs regulated, Quanvio role, promotion, and open-wallet building |
 | 1.5 | 2026-08-29 | Kimi Code / Quanvio Labs | Added "Why not 1 trillion?", governance, and 1000-year supply view |
 | 1.4 | 2026-08-29 | Kimi Code / Quanvio Labs | Added "Why 1 billion tokens?" supply explanation |
 | 1.3 | 2026-08-29 | Kimi Code / Quanvio Labs | Added originator earnings, validator earnings, and Quanvio validator role |

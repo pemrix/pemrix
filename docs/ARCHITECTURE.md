@@ -922,11 +922,102 @@ github.com/pemrix
 | `API.md` | API and SDK surface for developers | `docs/API.md` |
 | `DEVELOPERS.md` | Quick-start for building on PEMRIX | `docs/DEVELOPERS.md` |
 
+### 13.1 Network Identity & Brand Positioning
+
+PEMRIX is more than a blockchain. It is a **global value settlement network**. The brand identity reflects three layers:
+
+| Layer | Name | What It Is |
+|---|---|---|
+| **Network / L1** | PEMRIX Network | The decentralized ledger and consensus layer |
+| **Native asset** | PEMRIX (ticker TBD) | The settlement unit of the network |
+| **Application ecosystem** | PEMRIX Ecosystem | Wallets, payments, exchange, AI agents, IoT commerce |
+
+The positioning is:
+- **More future-proof than first-generation blockchains** because of crypto-agility and deterministic finality.
+- **Faster and cheaper than traditional payment rails** for final settlement.
+- **More open than banks, UPI, PayPal, or card networks** because no single company controls access.
+- **More secure by design** because keys, custody, validation, and commerce are separated into different security domains.
+
+### 13.2 Performance & Scalability Guarantees (Design Targets)
+
+| Metric | Target | Current Status |
+|---|---|---|
+| Finality | Deterministic, seconds | Working in testnet |
+| Block time | Sub-second to ~7.5 s | Working in testnet |
+| Throughput | 10,000+ sustained payment TPS | Not yet benchmarked at scale |
+| Database | Embedded KV (RocksDB/MDBX) | In development |
+| Capacity | 100 crore (1 billion) accounts, 100 crore daily txs | Architecture supports; real load testing required |
+
+Honest framing: these are engineering targets. The current implementation is a testnet. Mainnet-scale performance requires optimization, sharding or L2 research, and battle-testing.
+
+### 13.3 User Identity, Privacy, and Traceability
+
+- **PEMRIX addresses are pseudonymous.** They are not directly tied to real-world identity by the protocol.
+- **Transactions are public.** Balances, transaction hashes, and amounts are visible on-chain, like Bitcoin and Ethereum.
+- **Identity is optional.** Users who need KYC connect through regulated fiat partners, not the base layer.
+- **Tracing:** Anyone can trace transaction history on-chain. Law enforcement with proper authority can work with exchanges and partners to link addresses to identities.
+- **Privacy enhancements:** Future research into zero-knowledge proofs or confidential transactions may be added through governance, but privacy is not the primary launch feature.
+
+### 13.4 Distribution and Access
+
+| How Users Get PEMRIX | Description |
+|---|---|
+| Buy on exchange | List PEMRIX on centralized or decentralized exchanges |
+| Fiat on-ramp | Licensed partners convert INR/USD/EUR to PEMRIX |
+| Merchant earnings | Merchants accept PEMRIX for goods/services |
+| Validator rewards | Run a validator or delegate stake |
+| Developer grants | Foundation grants for ecosystem contributions |
+| Ecosystem incentives | Wallet sign-up rewards, referral programs, liquidity mining (where legally permitted) |
+
+### 13.5 Founder / Originator Allocation Principles
+
+There is no fixed rule for how much the founder should keep. Industry benchmarks vary widely. PEMRIX follows these principles:
+
+- **Enough to align incentives** with long-term success.
+- **Not enough to control governance forever.** Quanvio Labs' influence should decrease over time.
+- **Transparent allocation** published before mainnet genesis.
+- **Lock-ups and vesting** for team, investors, and foundation to prevent sudden dumps.
+
+A typical initial allocation model might be:
+
+| Category | Range |
+|---|---|
+| Founders / team | 10–20% |
+| Early investors | 10–25% |
+| Foundation / ecosystem | 20–40% |
+| Validator / staking rewards | 20–40% |
+| Community / public sale | 10–30% |
+
+The exact numbers will be published in the genesis allocation plan before mainnet.
+
+### 13.6 Exchange Listing Strategy
+
+PEMRIX is designed to meet the technical and compliance expectations of major exchanges:
+- Audited codebase and genesis tokenomics.
+- Clear legal opinion on token classification where required.
+- Active mainnet with independent validators.
+- Compliance partners for KYC/AML.
+- Market maker partnerships for liquidity.
+
+Listing fees and conditions vary by exchange. Some charge listing fees; others require liquidity commitments, market making, or legal reviews. PEMRIX will pursue listings methodically after mainnet stability is proven.
+
+### 13.7 Thousand-Year Security Claim
+
+No honest engineer claims any system is "unhackable." PEMRIX is designed to be:
+- **Cryptographically agile**, so algorithms can be replaced as they break.
+- **Economically secure**, so attacks cost more than they gain.
+- **Decentralized**, so no single failure point exists.
+- **Transparent**, so bugs are found and fixed quickly.
+- **Upgradeable**, so future threats can be addressed without social fracture.
+
+The goal is to be orders of magnitude more resilient than today's payment and blockchain systems. Resilience is proven by time, audits, and real-world operation.
+
 ### 14.7 Document Control
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-08-28 | Kimi Code / Quanvio Labs | Initial complete architecture and master plan |
+| 1.1 | 2026-08-30 | Kimi Code / Quanvio Labs | Added network identity, performance guarantees, identity/traceability, distribution, founder allocation, exchange listing, and thousand-year security framing |
 
 ---
 

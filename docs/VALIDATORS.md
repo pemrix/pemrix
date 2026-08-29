@@ -227,6 +227,135 @@ Monitor these key metrics:
 
 ---
 
+## Validator Reality, Security, and Governance
+
+This section answers the hard questions about what validators can and cannot do, how the network protects itself, and how validator participation is governed.
+
+### 1. Can a validator hack PEMRIX?
+
+**No single validator can change the ledger.** PEMRIX uses BFT consensus: a block only finalizes when >2/3 of voting power agrees. If one validator tries to create invalid balances, skip signatures, or mint free tokens, honest validators reject the block. The attacker loses rewards and can be slashed.
+
+A successful attack would require:
+- Breaking the cryptography (Ed25519 today, hybrid/PQC in the future), or
+- Controlling >2/3 of the staked voting power, or
+- A bug present in every honest validator's code.
+
+This is why decentralization, audits, bug bounties, and crypto-agility matter.
+
+### 2. Can a validator spread a virus or corrupt PEMRIX?
+
+A validator can only send consensus messages, blocks, and transactions. It cannot force other validators to run arbitrary code. The node software:
+- Rejects malformed messages.
+- Verifies every signature, balance, nonce, and state root independently.
+- Does not download or execute code from peers.
+
+Validator keys and server access are the main risks. A compromised validator server can sign invalid messages, but those messages are rejected by the network. Proper key custody (HSM, secure enclave, offline backup) and server hardening are mandatory.
+
+### 3. Can a bad validator be removed?
+
+**Yes, through protocol rules, not manual intervention.** Slashing and jailing are automatic:
+
+| Misbehavior | Consequence |
+|---|---|
+| Double signing two blocks at the same height | Slash stake, jail validator |
+| Extended downtime | Missed rewards, eventual jail |
+| Equivocation (conflicting votes) | Slash stake, jail validator |
+| Invalid block proposal | Rejected by peers, no reward |
+
+After a jail period, a validator can rejoin if it fixes the issue. Governance can also propose permanent exclusion in extreme cases.
+
+### 4. What happens if a validator goes offline and online repeatedly?
+
+- While offline, the validator misses block proposals and rewards.
+- If downtime exceeds a threshold, the validator is jailed and stops earning rewards.
+- Other validators continue finalizing blocks; the network is unaffected as long as <1/3 of voting power is offline.
+- When the validator comes back online, it syncs the blocks it missed and resumes participation.
+
+This is why professional validators use redundant power, networking, and monitoring.
+
+### 5. Is validator onboarding automated or manual?
+
+**The protocol layer is automated.** After mainnet, anyone who meets the stake and technical requirements can register on-chain. The validator set updates automatically at defined intervals.
+
+**At genesis, onboarding is manual and gated.** The first validator set is chosen for operational security and network stability. This is standard practice for every major BFT chain. Permissionless entry opens after launch.
+
+### 6. Why would someone become a validator?
+
+Validators earn block rewards and transaction fees proportional to their stake. They also:
+- Secure a global payment and settlement network.
+- Build reputation and attract delegated stake.
+- Support the ecosystem they participate in.
+
+It is a business activity, not charity. Professional validators run infrastructure and are compensated for it.
+
+### 7. Do validators earn money?
+
+Yes. Revenue comes from:
+- **Block rewards**: new issuance per block, split among validators.
+- **Transaction fees**: paid by users for transfers and smart-contract calls.
+- **Commission on delegated stake**: if users delegate PEMRIX to a validator, the validator may charge a commission (e.g., 0–20%).
+
+Earnings depend on total network stake, the validator's own stake, delegated stake, transaction volume, and commission rate.
+
+### 8. Is validator information public?
+
+**On-chain data is public:** validator addresses, stake amounts, rewards, commission rates, uptime, and slashing history. Anyone can see which validators are active and how they perform.
+
+**Off-chain identity is optional.** A validator can remain pseudonymous or publicly identify itself. Reputation systems, dashboards, and rating services can rank validators by uptime, commission, decentralization contribution, and community participation.
+
+### 9. Can validators run on Windows, Raspberry Pi, or mobile?
+
+- **Primary target:** Linux server (Ubuntu LTS, RHEL-compatible) on x86_64 or ARM64.
+- **Windows:** Not recommended for production validators. A Windows build may exist for development but is not supported for consensus participation.
+- **Raspberry Pi / edge devices:** Possible for light nodes or testnet, but not recommended for mainnet validators due to bandwidth, storage, and reliability requirements.
+- **Mobile:** No. Mobile devices cannot meet uptime, bandwidth, or security requirements.
+
+### 10. Are more validators always more secure?
+
+More independent, geographically distributed validators increase security up to a point. The key metrics are:
+- **Number of independent operators** (not one company running many nodes).
+- **Stake distribution** (no single validator holding >1/3 of stake).
+- **Geographic and jurisdictional diversity**.
+
+PEMRIX targets 100+ independent validators at genesis and 1,000+ over time.
+
+### 11. Can the validator set or stake minimum change after mainnet?
+
+Yes, through on-chain governance. Examples:
+- Minimum stake can be adjusted.
+- Validator cap can be changed.
+- Reward rate can be tuned within constitutional bounds.
+
+Quanvio Labs cannot change these alone. A super-majority of validators and voting stake is required.
+
+### 12. What legal rules apply to validators?
+
+Validators are independent operators. Responsibilities vary by country:
+- Report staking income for tax.
+- Comply with local data-hosting or cyber-security laws.
+- In some jurisdictions, professional staking may require registration.
+
+PEMRIX recommends every validator seek local legal advice. The protocol itself has no terms of service; regulated fiat interfaces are provided by licensed partners, not validators.
+
+### 13. How does a validator update safely?
+
+Updates are delivered through the normal GitHub release process:
+1. A new release is tagged and announced.
+2. Validators pull the source, build, or download signed binaries.
+3. The validator is restarted with the new binary.
+4. State is preserved; the node re-syncs any missed blocks and rejoins consensus.
+
+Validator state lives in `/var/lib/pemrix`. Replacing the binary does not delete state. Backups of `validator_key.json` and `node.json` are required before any upgrade.
+
+### 14. What makes PEMRIX different from Bitcoin, Ethereum, UPI, PayPal, etc.?
+
+See `docs/PEMRIX_VS_MARKET.md` for a detailed comparison. In short:
+- **Like Bitcoin/Ethereum:** open blockchain, self-custody, global, programmable.
+- **Like UPI/PhonePe/PayPal/Razorpay/Stripe:** fast, simple payments, merchant tools.
+- **Unlike all of them:** crypto-agile, deterministic finality in seconds, AI-native policy wallets, and a design meant to upgrade cryptography and consensus without forking.
+
+---
+
 ## Support
 
 - Documentation: `docs.pemrix.com`
@@ -240,3 +369,4 @@ Monitor these key metrics:
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-08-29 | Kimi Code / Quanvio Labs | Initial validator handbook |
+| 1.1 | 2026-08-30 | Kimi Code / Quanvio Labs | Added validator reality, security, governance, and onboarding answers |
