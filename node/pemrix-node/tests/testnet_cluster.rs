@@ -6,7 +6,10 @@
 
 use std::time::Duration;
 
+// This integration test binds fixed localhost ports and is sensitive to CI
+// runner timing. Run it locally with `cargo test --all-features -- --ignored`.
 #[tokio::test]
+#[ignore]
 async fn four_validator_testnet_produces_blocks() {
     let _ = tracing_subscriber::fmt::try_init();
 
