@@ -1,0 +1,32 @@
+[package]
+name = "pemrix-webhooks"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "PEMRIX webhook subscription and delivery service."
+
+[[bin]]
+name = "pemrix-webhook-worker"
+path = "src/main.rs"
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+axum = { workspace = true }
+clap = { workspace = true }
+hmac = "0.12"
+sha2 = "0.10"
+hex = { workspace = true }
+uuid = { version = "1.8", features = ["v4"] }
+
+[dev-dependencies]
+tower = { workspace = true }

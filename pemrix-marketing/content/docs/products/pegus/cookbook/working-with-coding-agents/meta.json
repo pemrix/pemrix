@@ -1,0 +1,16 @@
+{
+  "title": "Working with Coding Agents",
+  "pages": [
+    "automatic-code-review",
+    "claude-code-integration",
+    "claude-desktop-integration",
+    "codex-cli",
+    "cursor-integration",
+    "hermes-integration",
+    "junie",
+    "mcp-servers",
+    "openclaw-integration",
+    "opencode-integration"
+  ],
+  "icon": "bot"
+}

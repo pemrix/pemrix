@@ -1,0 +1,15 @@
+{
+  "name": "@pemrix/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the PEMRIX network",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "license": "MIT OR Apache-2.0"
+}

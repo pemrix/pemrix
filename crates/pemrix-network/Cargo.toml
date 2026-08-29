@@ -1,0 +1,30 @@
+[package]
+name = "pemrix-network"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "P2P networking layer for PEMRIX, built on QUIC."
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+serde = { workspace = true }
+hex = { workspace = true }
+async-trait = { workspace = true }
+
+[features]
+default = []
+quic = ["dep:quinn"]
+
+[dependencies.quinn]
+version = "0.11"
+optional = true
+
+[dev-dependencies]
+tokio = { workspace = true }

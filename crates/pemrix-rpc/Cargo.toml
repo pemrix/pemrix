@@ -1,0 +1,43 @@
+[package]
+name = "pemrix-rpc"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "RPC gateway for PEMRIX nodes: gRPC and JSON-RPC interfaces."
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+pemrix-consensus = { workspace = true }
+pemrix-storage = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+axum = { workspace = true }
+hex = { workspace = true }
+
+[features]
+default = []
+grpc = ["dep:tonic", "dep:prost", "dep:tonic-build", "dep:protobuf-src"]
+
+[dependencies.tonic]
+version = "0.12"
+optional = true
+features = ["transport"]
+
+[dependencies.prost]
+version = "0.13"
+optional = true
+
+[build-dependencies]
+tonic-build = { version = "0.12", optional = true }
+protobuf-src = { version = "2.1", optional = true }
+
+[dev-dependencies]
+tower = { workspace = true }

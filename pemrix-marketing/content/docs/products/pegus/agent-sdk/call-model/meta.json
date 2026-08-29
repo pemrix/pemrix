@@ -1,0 +1,22 @@
+{
+  "title": "Call Model",
+  "pages": [
+    "overview",
+    "items",
+    "api-reference",
+    "dynamic-parameters",
+    "next-turn-params",
+    "stop-conditions",
+    "streaming",
+    "text-generation",
+    "message-formats",
+    "tools",
+    "async-tools",
+    "mcp-tools",
+    "lifecycle-hooks",
+    "doom-loop-detection",
+    "tool-approval-state",
+    "examples"
+  ],
+  "icon": "message-square"
+}

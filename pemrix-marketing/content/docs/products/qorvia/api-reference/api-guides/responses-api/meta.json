@@ -1,0 +1,11 @@
+{
+  "title": "Responses API",
+  "pages": [
+    "overview",
+    "basic-usage",
+    "reasoning",
+    "tool-calling",
+    "web-search",
+    "error-handling"
+  ]
+}

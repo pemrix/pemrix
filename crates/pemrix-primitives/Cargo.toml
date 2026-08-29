@@ -1,0 +1,20 @@
+[package]
+name = "pemrix-primitives"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "Core PEMRIX primitives: blocks, transactions, addresses, and canonical encoding."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+hex = { workspace = true }
+blake3 = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

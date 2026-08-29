@@ -1,0 +1,10 @@
+{
+  "title": "Guardrails",
+  "pages": [
+    "guardrails",
+    "prompt-injection-detection",
+    "sensitive-info",
+    "secret-formats"
+  ],
+  "icon": "shield-check"
+}

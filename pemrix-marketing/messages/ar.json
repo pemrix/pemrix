@@ -1,0 +1,73 @@
+{
+  "docs": {
+    "header": {
+      "searchPlaceholder": "بحث...",
+      "searchShortcut": "⌘K",
+      "askAssistant": "اسأل المساعد",
+      "switchProduct": "تبديل المنتج"
+    },
+    "launcher": {
+      "title": "البحث عن المنتجات",
+      "searchPlaceholder": "البحث في المنتجات",
+      "noResults": "لم يتم العثور على منتجات",
+      "docsSuffix": "المستندات"
+    },
+    "landing": {
+      "heroBadge": "مستندات {product}",
+      "heroTitle": "ابنِ باستخدام {product}",
+      "heroDescription": "كل ما تحتاجه لتوجيه وتقييم ونشر تطبيقات الذكاء الاصطناعي بمستوى الإنتاج على {product}. استكشف الأدلة ومراجع API ومجموعات SDK.",
+      "searchDocs": "البحث في المستندات",
+      "quickstart": "البداية السريعة",
+      "popularGuides": "أدلة شائعة",
+      "browseByTopic": "استعراض حسب الموضوع",
+      "explore": "استكشاف",
+      "articles": "{count} مقالة",
+      "readyToIntegrate": "جاهز للدمج؟",
+      "apiReferenceCta": "انتقل مباشرة إلى مرجع API للمصادقة وإكمالات الدردشة والتضمينات وبيانات الموديل الوصفية.",
+      "apiReference": "مرجع API"
+    },
+    "nav": {
+      "docs": "المستندات",
+      "apiReference": "مرجع API",
+      "clientSdks": "SDKs للعملاء",
+      "agentSdk": "SDK الوكيل",
+      "cookbook": "كتاب الطبخ",
+      "overview": "نظرة عامة"
+    },
+    "assistant": {
+      "title": "Help",
+      "subtitle": "اسأل أي شيء حول مستندات Quanvio",
+      "placeholder": "اسأل حول مستندات Quanvio...",
+      "statusReady": "جاهز للمساعدة",
+      "statusNoKey": "لا حاجة لمفتاح API للنماذج المجانية",
+      "settingsTitle": "Settings",
+      "provider": "Provider",
+      "searchProvider": "البحث عن مزود...",
+      "model": "Model",
+      "searchModel": "البحث عن نموذج...",
+      "apiKey": "API key",
+      "apiKeyHint": "مخزن فقط في هذا المتصفح. النماذج المجانية متاحة على OpenRouter.",
+      "clearChat": "مسح الدردشة",
+      "clearAll": "مسح جميع البيانات",
+      "thinking": "جارٍ التفكير…",
+      "copy": "نسخ",
+      "copied": "تم النسخ",
+      "reply": "رد",
+      "dropHint": "أفلت صورة أو ملف نصي",
+      "emptyHint": "اسأل حول أي منتج Quanvio — التوجيه، النماذج، API، SDKs، الكتب التطبيقية.",
+      "sample1": "كيف أبدأ مع Quanvio API؟",
+      "sample2": "ما النماذج المدعومة للتوجيه؟",
+      "sample3": "كيف أستخدم Python SDK؟",
+      "errorNoKey": "يرجى إضافة مفتاح API في إعدادات المساعد.",
+      "resetPosition": "إعادة تعيين الموضع",
+      "minimize": "تصغير",
+      "close": "إغلاق"
+    },
+    "language": {
+      "label": "اللغة",
+      "en": "English",
+      "hi": "हिन्दी",
+      "ar": "العربية"
+    }
+  }
+}

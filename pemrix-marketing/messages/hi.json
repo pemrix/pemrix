@@ -1,0 +1,73 @@
+{
+  "docs": {
+    "header": {
+      "searchPlaceholder": "खोजें...",
+      "searchShortcut": "⌘K",
+      "askAssistant": "सहायक से पूछें",
+      "switchProduct": "उत्पाद बदलें"
+    },
+    "launcher": {
+      "title": "उत्पाद खोज",
+      "searchPlaceholder": "उत्पाद खोजें",
+      "noResults": "कोई उत्पाद नहीं मिला",
+      "docsSuffix": "दस्तावेज़"
+    },
+    "landing": {
+      "heroBadge": "{product} दस्तावेज़",
+      "heroTitle": "{product} के साथ बनाएं",
+      "heroDescription": "{product} पर उत्पादन-स्तरीय AI अनुप्रयोगों को रूट, बेंचमार्क और शिप करने के लिए आपको जो कुछ भी चाहिए। गाइड, API संदर्भ और SDK का अन्वेषण करें।",
+      "searchDocs": "दस्तावेज़ खोजें",
+      "quickstart": "क्विकस्टार्ट",
+      "popularGuides": "लोकप्रिय गाइड",
+      "browseByTopic": "विषय के अनुसार ब्राउज़ करें",
+      "explore": "अन्वेषण करें",
+      "articles": "{count} लेख",
+      "readyToIntegrate": "एकीकृत करने के लिए तैयार?",
+      "apiReferenceCta": "प्रमाणीकरण, चैट पूर्णताओं, एम्बेडिंग और मॉडल मेटाडेटा के लिए सीधे API संदर्भ में जाएं।",
+      "apiReference": "API संदर्भ"
+    },
+    "nav": {
+      "docs": "दस्तावेज़",
+      "apiReference": "API संदर्भ",
+      "clientSdks": "क्लाइंट SDK",
+      "agentSdk": "एजेंट SDK",
+      "cookbook": "कुकबुक",
+      "overview": "अवलोकन"
+    },
+    "assistant": {
+      "title": "Help",
+      "subtitle": "Quanvio दस्तावेज़ के बारे में कुछ भी पूछें",
+      "placeholder": "Quanvio दस्तावेज़ के बारे में पूछें...",
+      "statusReady": "मदद के लिए तैयार",
+      "statusNoKey": "मुफ्त मॉडल के लिए API कुंजी की आवश्यकता नहीं",
+      "settingsTitle": "Settings",
+      "provider": "Provider",
+      "searchProvider": "Provider खोजें...",
+      "model": "Model",
+      "searchModel": "Model खोजें...",
+      "apiKey": "API key",
+      "apiKeyHint": "केवल इस ब्राउज़र में संग्रहीत। OpenRouter पर मुफ्त मॉडल उपलब्ध हैं।",
+      "clearChat": "चैट साफ़ करें",
+      "clearAll": "सभी डेटा साफ़ करें",
+      "thinking": "सोच रहा है…",
+      "copy": "कॉपी",
+      "copied": "कॉपी हो गया",
+      "reply": "जवाब दें",
+      "dropHint": "छवि या टेक्स्ट फ़ाइल छोड़ें",
+      "emptyHint": "किसी भी Quanvio उत्पाद के बारे में पूछें — रूटिंग, मॉडल, API, SDK, कुकबुक।",
+      "sample1": "मैं Quanvio API के साथ कैसे शुरुआत करूँ?",
+      "sample2": "रूटिंग के लिए कौन से मॉडल समर्थित हैं?",
+      "sample3": "मैं Python SDK का उपयोग कैसे करूँ?",
+      "errorNoKey": "कृपया सहायक सेटिंग्स में API कुंजी जोड़ें।",
+      "resetPosition": "स्थिति रीसेट करें",
+      "minimize": "न्यूनतम करें",
+      "close": "बंद करें"
+    },
+    "language": {
+      "label": "भाषा",
+      "en": "English",
+      "hi": "हिन्दी",
+      "ar": "العربية"
+    }
+  }
+}

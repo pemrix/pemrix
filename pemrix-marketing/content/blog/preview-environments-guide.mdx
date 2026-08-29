@@ -1,0 +1,28 @@
+---
+title: 'Preview environments that match production'
+description: 'How Relay spins up isolated deploy previews per pull request with production parity and automatic teardown.'
+date: '2025-01-22'
+author:
+  name: 'Priya Nair'
+  image: 'https://avatar.vercel.sh/priya'
+tags: ['Product']
+coverImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80'
+---
+
+Every pull request on Relay can ship a live preview URL in minutes. The preview runs the same build artifacts, environment variables, and deploy gates as production — minus the production database.
+
+## What ships in a preview
+
+When a PR opens, Relay builds your app, runs tests, and deploys to a unique subdomain like `pr-482.preview.relay.dev`. Reviewers get a shareable link without asking an engineer to deploy manually.
+
+Previews inherit secrets scoped to the preview environment, so staging API keys and feature flags behave the way you expect in QA.
+
+## Automatic cleanup
+
+Merged, closed, or stale PRs trigger teardown automatically. TTL controls let platform teams cap how long idle previews stay online, which keeps cloud spend predictable on busy monorepos.
+
+## Getting started
+
+Add a `preview:` block to `relay.yaml` or enable previews under **Settings → Environments**. Most Next.js and static sites work out of the box with the default buildpack.
+
+See the [Preview environments guide](/docs/crm-csv) for custom domains, auth walls, and monorepo path filters.

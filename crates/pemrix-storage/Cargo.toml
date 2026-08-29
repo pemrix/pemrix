@@ -1,0 +1,25 @@
+[package]
+name = "pemrix-storage"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "State storage abstraction and backends for PEMRIX nodes."
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+
+[features]
+default = []
+rocksdb = ["dep:rocksdb"]
+
+[dependencies.rocksdb]
+version = "0.22"
+optional = true
+
+[dev-dependencies]

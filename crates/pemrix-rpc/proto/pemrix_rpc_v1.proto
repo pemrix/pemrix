@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package pemrix.rpc.v1;
+
+// NodeService exposes read-only chain state and transaction submission.
+service NodeService {
+  // Status returns the current node health and chain height.
+  rpc Status(StatusRequest) returns (StatusResponse);
+
+  // GetBlockByHeight returns a block by its height.
+  rpc GetBlockByHeight(BlockByHeightRequest) returns (BlockResponse);
+
+  // GetBlockByHash returns a block by its hash.
+  rpc GetBlockByHash(BlockByHashRequest) returns (BlockResponse);
+
+  // GetTransaction returns a transaction by its hash.
+  rpc GetTransaction(TransactionRequest) returns (TransactionResponse);
+
+  // GetBalance returns the balance of an account.
+  rpc GetBalance(BalanceRequest) returns (BalanceResponse);
+
+  // SendTransaction submits a signed transaction to the mempool.
+  rpc SendTransaction(SendTransactionRequest) returns (SendTransactionResponse);
+}
+
+message StatusRequest {}
+
+message StatusResponse {
+  string status = 1;
+  uint64 height = 2;
+  string version = 3;
+}
+
+message BlockByHeightRequest {
+  uint64 height = 1;
+}
+
+message BlockByHashRequest {
+  // 64-character lowercase hex hash.
+  string hash = 1;
+}
+
+message BlockResponse {
+  string hash = 1;
+  uint64 height = 2;
+  BlockHeader header = 3;
+  BlockBody body = 4;
+}
+
+message BlockHeader {
+  uint64 height = 1;
+  uint64 timestamp = 2;
+  string previous_hash = 3;
+  string state_root = 4;
+  string tx_root = 5;
+  // 64-character lowercase hex proposer identifier.
+  string proposer = 6;
+}
+
+message BlockBody {
+  repeated Transaction transactions = 1;
+}
+
+message TransactionRequest {
+  // 64-character lowercase hex hash.
+  string hash = 1;
+}
+
+message TransactionResponse {
+  string hash = 1;
+  string status = 2;
+  Transaction transaction = 3;
+}
+
+message Transaction {
+  // Address in PEMRIX format: "px" followed by 64 hex characters.
+  string sender = 1;
+  string recipient = 2;
+  // Amount as a decimal string to support u128.
+  string amount = 3;
+  uint64 nonce = 4;
+  // Fee as a decimal string to support u128.
+  string fee = 5;
+  bytes payload = 6;
+}
+
+message BalanceRequest {
+  // Address in PEMRIX format: "px" followed by 64 hex characters.
+  string address = 1;
+}
+
+message BalanceResponse {
+  string address = 1;
+  // Balance as a decimal string to support u128.
+  string balance = 2;
+}
+
+message SendTransactionRequest {
+  Transaction transaction = 1;
+}
+
+message SendTransactionResponse {
+  string hash = 1;
+  string status = 2;
+}

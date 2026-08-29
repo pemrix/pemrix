@@ -1,0 +1,10 @@
+{
+  "title": "Evaluate & Optimize",
+  "pages": [
+    "distillation",
+    "model-migrations",
+    "rag",
+    "red-teaming"
+  ],
+  "icon": "flask"
+}

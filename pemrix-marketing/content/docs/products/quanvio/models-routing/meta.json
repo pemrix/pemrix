@@ -1,0 +1,12 @@
+{
+  "title": "Models & Routing",
+  "pages": [
+    "model-fallbacks",
+    "provider-selection",
+    "auto-exacto",
+    "private-models",
+    "model-variants",
+    "routers"
+  ],
+  "icon": "route"
+}

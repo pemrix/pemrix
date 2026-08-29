@@ -1,0 +1,10 @@
+{
+  "title": "Best Practices",
+  "pages": [
+    "latency-and-performance",
+    "prompt-caching",
+    "uptime-optimization",
+    "reasoning-tokens"
+  ],
+  "icon": "lightbulb"
+}

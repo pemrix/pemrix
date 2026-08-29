@@ -1,0 +1,11 @@
+{
+  "title": "Agent SDK",
+  "pages": [
+    "overview",
+    "usage-for-agents",
+    "call-model",
+    "devtools",
+    "agent-migration"
+  ],
+  "icon": "bot"
+}

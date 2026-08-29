@@ -1,0 +1,30 @@
+[package]
+name = "pemrix-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "Command-line interface for the PEMRIX network node."
+
+[[bin]]
+name = "pemrix"
+path = "src/main.rs"
+
+[dependencies]
+pemrix-node = { path = "../../node/pemrix-node" }
+pemrix-sdk = { workspace = true }
+pemrix-primitives = { workspace = true }
+pemrix-crypto = { workspace = true }
+pemrix-testnet = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[features]
+default = []
+grpc = ["pemrix-node/grpc"]

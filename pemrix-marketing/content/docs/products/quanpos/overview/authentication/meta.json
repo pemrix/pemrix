@@ -1,0 +1,9 @@
+{
+  "title": "Authentication",
+  "pages": [
+    "oauth",
+    "management-api-keys",
+    "byok"
+  ],
+  "icon": "shield-check"
+}

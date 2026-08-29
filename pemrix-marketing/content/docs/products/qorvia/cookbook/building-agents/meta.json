@@ -1,0 +1,12 @@
+{
+  "title": "Building Agents",
+  "pages": [
+    "hitl-tools",
+    "long-horizon-agents",
+    "advisor-server-tool",
+    "subagent-server-tool",
+    "create-agent-harness-tui",
+    "create-headless-agent"
+  ],
+  "icon": "hammer"
+}

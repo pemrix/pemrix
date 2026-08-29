@@ -1,0 +1,206 @@
+---
+title: Preview Environments
+description: Spin up isolated preview deployments for every pull request with automatic teardown.
+---
+
+## Overview
+
+Preview environments let reviewers test changes in a production-like URL before merge. Relay builds your app on each PR, deploys to a unique subdomain, and tears down the environment when the PR closes.
+
+<Steps>
+
+<Step>
+### Enable previews in relay.yaml
+
+Add a preview job that runs only on pull requests:
+
+```yaml title="relay.yaml"
+jobs:
+  preview:
+    if: relay.event == 'pull_request'
+    runs-on: relay-linux-medium
+    environment:
+      name: preview-${{ relay.pr.number }}
+      url: https://pr-${{ relay.pr.number }}.preview.example.com
+    steps:
+      - uses: relay/checkout@v4
+      - run: npm ci && npm run build
+      - uses: relay/preview-deploy@v2
+        with:
+          ttl: 7d
+```
+
+</Step>
+
+<Step>
+### Configure routing
+
+Point a wildcard DNS record at Relay's preview ingress, or use Relay-managed domains:
+
+```yaml
+preview:
+  domain: preview.example.com
+  pathPrefix: /pr
+```
+
+Each PR receives a URL like `https://pr-142.preview.example.com`.
+
+</Step>
+
+<Step>
+### Comment on the PR
+
+Relay posts a status comment with the preview URL, build logs link, and deploy gate status:
+
+```yaml
+      - uses: relay/preview-comment@v1
+        with:
+          template: |
+            **Preview ready:** ${{ steps.deploy.outputs.url }}
+            Commit: ${{ relay.sha }}
+```
+
+</Step>
+
+</Steps>
+
+## Configuration options
+
+<Tabs items={['TTL & cleanup', 'Secrets', 'Dependencies', 'Monorepos']}>
+
+<Tab value="TTL & cleanup">
+### Lifecycle
+
+Control how long previews stay alive:
+
+```yaml
+- uses: relay/preview-deploy@v2
+  with:
+    ttl: 7d
+    destroy-on-close: true
+    destroy-on-merge: true
+```
+
+Stale previews are garbage-collected nightly if `destroy-on-close` is disabled.
+
+</Tab>
+
+<Tab value="Secrets">
+### Environment secrets
+
+Preview environments inherit scoped secrets — never production credentials:
+
+```yaml
+environment:
+  name: preview-${{ relay.pr.number }}
+  secrets:
+    - DATABASE_URL_PREVIEW
+    - STRIPE_TEST_KEY
+```
+
+</Tab>
+
+<Tab value="Dependencies">
+### Service dependencies
+
+Provision databases or caches alongside the preview:
+
+```yaml
+- uses: relay/preview-services@v1
+  with:
+    postgres: '15'
+    redis: '7'
+```
+
+Connection strings are injected as environment variables for the deploy step.
+
+</Tab>
+
+<Tab value="Monorepos">
+### Monorepo path filters
+
+Deploy only affected apps in a monorepo:
+
+```yaml
+jobs:
+  preview-web:
+    if: relay.changes.includes('apps/web/**')
+    steps:
+      - uses: relay/preview-deploy@v2
+        with:
+          working-directory: apps/web
+```
+
+</Tab>
+
+</Tabs>
+
+## Deploy gates
+
+Require checks to pass before a preview URL is published:
+
+<Accordions>
+
+<Accordion title="Required status checks">
+```yaml
+preview:
+  gates:
+    - job: test
+    - job: lint
+```
+</Accordion>
+
+<Accordion title="Manual approval">
+```yaml
+environment:
+  name: preview-${{ relay.pr.number }}
+  protection:
+    reviewers: [platform-team]
+```
+</Accordion>
+
+<Accordion title="Rollback">
+```yaml
+- uses: relay/preview-deploy@v2
+  with:
+    rollback-on-failure: true
+    previous-version: auto
+```
+</Accordion>
+
+</Accordions>
+
+## Insights
+
+Track preview usage in the Relay dashboard:
+
+<TypeTable
+  type={{
+    deploys: {
+      description: 'Total preview deploys per repository',
+      type: 'counter',
+      required: false,
+    },
+    median_build_time: {
+      description: 'Time from PR open to preview URL live',
+      type: 'duration',
+      required: false,
+    },
+    active_previews: {
+      description: 'Currently running preview environments',
+      type: 'gauge',
+      required: false,
+    },
+  }}
+/>
+
+## Best Practices
+
+> **Performance Tip**: Reuse build caches from the base branch to cut preview build times in half.
+
+- Use path filters to skip previews for docs-only changes
+- Scope secrets to preview-specific values
+- Set `ttl` to match your review cadence (typically 3–7 days)
+- Enable `destroy-on-merge` to avoid orphaned infrastructure
+
+<Badge variant="default">Previews enabled</Badge>

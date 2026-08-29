@@ -1,0 +1,29 @@
+[package]
+name = "pemrix-explorer"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "PEMRIX explorer API service."
+
+[[bin]]
+name = "pemrix-explorer"
+path = "src/main.rs"
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+pemrix-rpc = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+axum = { workspace = true }
+clap = { workspace = true }
+
+[dev-dependencies]
+tower = { workspace = true }

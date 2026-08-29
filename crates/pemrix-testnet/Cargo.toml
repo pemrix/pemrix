@@ -1,0 +1,19 @@
+[package]
+name = "pemrix-testnet"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "PEMRIX testnet configuration and bootstrap utilities."
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+pemrix-crypto = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]

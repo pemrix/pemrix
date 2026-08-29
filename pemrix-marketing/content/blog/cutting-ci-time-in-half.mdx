@@ -1,0 +1,30 @@
+---
+title: 'How we cut median CI time by 41%'
+description: 'Lessons from profiling thousands of Relay customer pipelines — caching, parallelism, and test selection that actually stick.'
+date: '2024-12-05'
+author:
+  name: 'Leo Park'
+  image: 'https://avatar.vercel.sh/leo'
+tags: ['Product']
+coverImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80'
+---
+
+Slow CI is rarely one bad job. It is a stack of small delays — cold caches, redundant test suites, and steps that run sequentially when they could run in parallel.
+
+We analyzed anonymized run data from teams on Relay Pro and found three changes that consistently moved median pipeline duration down by more than a third.
+
+## Cache what changes least
+
+Remote cache keys tied to lockfiles instead of branch names produced the biggest single win. Teams sharing `node_modules` and compiler output across PRs saw restore times drop from minutes to seconds.
+
+## Parallelize the long pole
+
+Most pipelines had one job consuming 60–70% of wall time — usually integration tests or a Docker build. Splitting that job into matrix legs or fan-out stages cut queue time without adding runner cost.
+
+## Skip tests that cannot fail
+
+Mapping changed paths to test ownership let teams run a fraction of suites on typical PRs while keeping full runs on `main`. Relay AI now suggests these mappings automatically after a few weeks of run history.
+
+## Try it on your repo
+
+Run **Insights → Pipeline optimizer** on any Pro workspace to see ranked suggestions with estimated time saved. No YAML changes required until you accept a recommendation.

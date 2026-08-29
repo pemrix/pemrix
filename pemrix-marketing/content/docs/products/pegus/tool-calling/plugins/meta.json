@@ -1,0 +1,9 @@
+{
+  "title": "Plugins",
+  "pages": [
+    "plugins",
+    "web-search",
+    "response-healing"
+  ],
+  "icon": "plug"
+}

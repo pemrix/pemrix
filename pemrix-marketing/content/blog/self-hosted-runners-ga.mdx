@@ -1,0 +1,32 @@
+---
+title: 'Self-hosted runners reach GA'
+description: 'Run pipelines on your own hardware with the same speed and reliability as Relay Cloud.'
+date: '2025-02-18'
+author:
+  name: 'Sam Rivera'
+  image: 'https://avatar.vercel.sh/sam'
+tags: ['Product']
+coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&q=80'
+---
+
+Self-hosted runners are now generally available. Install the Relay agent on your machines, register a pool, and route jobs to private networks without sacrificing the UX you get on Relay Cloud.
+
+## Why teams asked for this
+
+Regulated industries, air-gapped environments, and GPU-heavy workloads need builds to stay on hardware they control. Beta customers used self-hosted runners for model training pipelines, on-prem artifact promotion, and compliance-bound deploy steps.
+
+## How it works
+
+1. Install the agent with `relay agent install`.
+2. Create a runner pool in the dashboard and copy the registration token.
+3. Tag jobs in `relay.yaml` with `runs-on: [self-hosted, linux, gpu]`.
+
+Jobs queue through the same orchestration layer as cloud runners, so logs, retries, and artifacts behave identically.
+
+## Security
+
+Agents use short-lived credentials, outbound-only connections, and optional OIDC for cloud deploy steps. Enterprise plans add pool-level RBAC and audit events for every registration and job assignment.
+
+## Availability
+
+Self-hosted runners are included on Enterprise and available as an add-on for Pro. See pricing or contact sales for capacity planning help.

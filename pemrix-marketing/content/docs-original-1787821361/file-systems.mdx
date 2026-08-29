@@ -1,0 +1,196 @@
+---
+title: Runners
+description: Run pipelines on Relay cloud runners or self-hosted agents across Linux, macOS, Windows, and ARM.
+---
+
+## Runner types
+
+Relay supports managed cloud runners and self-hosted agents. Pick a target with `runs-on` in `relay.yaml`.
+
+<Files>
+  <Folder name="relay-runners" defaultOpen>
+    <Folder name="cloud" defaultOpen>
+      <File name="relay-linux-small" />
+      <File name="relay-linux-medium" />
+      <File name="relay-linux-large" />
+      <File name="relay-macos-medium" />
+      <File name="relay-windows-medium" />
+    </Folder>
+    <Folder name="self-hosted">
+      <File name="self-hosted-linux" />
+      <File name="self-hosted-macos" />
+      <File name="self-hosted-windows" />
+      <File name="self-hosted-arm64" />
+    </Folder>
+    <File name="relay.yaml" />
+  </Folder>
+</Files>
+
+## Cloud runners
+
+Managed runners require no setup. Relay provisions ephemeral VMs for each job.
+
+<Tabs items={['Linux', 'macOS', 'Windows', 'ARM']}>
+
+<Tab value="Linux">
+### Linux runners
+
+Default choice for most CI workloads. Available sizes from 2 vCPU / 8 GB to 8 vCPU / 32 GB.
+
+```yaml
+jobs:
+  test:
+    runs-on: relay-linux-medium
+    steps:
+      - run: npm test
+```
+
+</Tab>
+
+<Tab value="macOS">
+### macOS runners
+
+Use for Xcode builds, iOS signing, and Apple Silicon–specific tests.
+
+```yaml
+jobs:
+  ios-build:
+    runs-on: relay-macos-medium
+    steps:
+      - run: xcodebuild -scheme App test
+```
+
+</Tab>
+
+<Tab value="Windows">
+### Windows runners
+
+Run .NET, PowerShell, and native Windows test suites.
+
+```yaml
+jobs:
+  windows-test:
+    runs-on: relay-windows-medium
+    steps:
+      - run: dotnet test
+```
+
+</Tab>
+
+<Tab value="ARM">
+### ARM64 runners
+
+Cloud and self-hosted ARM64 targets for embedded, mobile, and cost-efficient builds.
+
+```yaml
+jobs:
+  arm-build:
+    runs-on: relay-linux-arm64-medium
+    steps:
+      - run: cargo build --release
+```
+
+</Tab>
+
+</Tabs>
+
+## Self-hosted runners
+
+Register agents in your network, VPC, or on bare metal for compliance or specialized hardware.
+
+<Steps>
+
+<Step>
+### Install the agent
+
+Download and install the Relay agent on your machine:
+
+```bash
+curl -fsSL https://get.relay.dev/agent | bash
+relay-agent register --org northline --labels gpu,docker
+```
+
+</Step>
+
+<Step>
+### Configure labels
+
+Labels route jobs to the right pool:
+
+```yaml title="relay.yaml"
+jobs:
+  integration:
+    runs-on: [self-hosted, linux, docker]
+    steps:
+      - run: docker compose up -d
+      - run: npm run test:integration
+```
+
+</Step>
+
+<Step>
+### Monitor health
+
+View agent status in **Settings → Runners**. Stale agents are marked offline after 5 minutes without a heartbeat.
+
+</Step>
+
+</Steps>
+
+## Runner configuration
+
+<TypeTable
+  type={{
+    'runs-on': {
+      description: 'Runner target — cloud label or self-hosted label set',
+      type: 'string | string[]',
+      required: true,
+    },
+    timeout: {
+      description: 'Maximum job duration before cancellation',
+      type: 'string',
+      required: false,
+      default: '"360m"',
+    },
+    concurrency: {
+      description: 'Limit parallel jobs in a concurrency group',
+      type: 'string',
+      required: false,
+    },
+    container: {
+      description: 'Optional Docker image for Linux jobs',
+      type: 'object',
+      required: false,
+    },
+  }}
+/>
+
+## OIDC and secrets on runners
+
+Self-hosted and cloud runners receive short-lived OIDC tokens for cloud deploys. Mount organization secrets without exposing them in logs:
+
+```yaml
+jobs:
+  deploy:
+    runs-on: self-hosted-linux
+    permissions:
+      id-token: write
+    steps:
+      - uses: relay/aws-oidc@v1
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/RelayDeploy
+      - run: ./scripts/deploy.sh
+        env:
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+```
+
+## Best Practices
+
+> **Important**: Pin self-hosted agents to a version channel and rotate registration tokens regularly.
+
+- Use cloud runners for bursty PR builds; reserve self-hosted for GPU or air-gapped workloads
+- Apply labels for OS, architecture, and capability (e.g. `docker`, `k8s`)
+- Set `timeout` on long-running integration jobs
+- Scale self-hosted pools with auto-scaling groups or Relay's agent orchestration
+
+<Badge variant="info">Runners ready</Badge>

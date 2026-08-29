@@ -1,0 +1,77 @@
+---
+title: Getting Started
+description: Install the Relay CLI, link your repository, and run your first pipeline.
+---
+
+## Prerequisites
+
+Before you begin, make sure you have the following:
+
+- Node.js 18.0 or later
+- npm, yarn, or pnpm
+- Git
+- A Relay account ([sign up](/signup) or [sign in](/signin))
+
+## Install the CLI
+
+<Card>
+  <CardHeader>
+    <CardTitle>Install globally via npm</CardTitle>
+    <CardDescription>The recommended way to install Relay</CardDescription>
+  </CardHeader>
+  <CardContent>
+
+```bash
+npm i -g @relay/cli
+```
+
+Verify the installation:
+
+```bash
+relay --version
+```
+
+  </CardContent>
+</Card>
+
+## Initialize a project
+
+Run `relay init` in your repository root. Relay generates a starter `relay.yaml` and links the repo to your organization.
+
+```bash
+cd my-app
+relay init
+```
+
+You'll be prompted to:
+
+1. Authenticate with `relay login` (opens a browser session)
+2. Select an organization and repository
+3. Choose a pipeline template (Node, Docker, or monorepo)
+
+## Run your first pipeline
+
+Trigger a local dry run or push to start a cloud build:
+
+```bash
+relay run --local
+relay run --branch main
+```
+
+## Connect your repository
+
+Relay watches Git events automatically once the repo is linked. Add a status badge to your README:
+
+```markdown
+[![Relay](https://api.relay.dev/badges/org/repo)](https://relay.dev/org/repo)
+```
+
+> **Note**: Self-hosted runners require a separate registration step. See [Runners](/docs/file-systems).
+
+## Next steps
+
+- Read the [API Reference](/docs/api-reference) for jobs, steps, and caching
+- Configure [Preview Environments](/docs/crm-csv) for pull requests
+- Enable [Relay AI](/docs/ai-prompts) for flaky-test detection and auto-retry
+
+<Badge variant="muted">Ready to ship</Badge>

@@ -1,0 +1,27 @@
+[package]
+name = "pemrix-crypto"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "Cryptographic primitives and signature abstraction for PEMRIX."
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+thiserror = { workspace = true }
+ed25519-dalek = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
+
+[features]
+default = ["classical"]
+classical = []
+pqc = []
+hybrid = ["classical", "pqc"]
+
+[dev-dependencies]

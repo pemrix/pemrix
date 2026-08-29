@@ -1,0 +1,22 @@
+[package]
+name = "pemrix-sandbox"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "In-memory developer sandbox for testing PEMRIX state transitions."
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+pemrix-consensus = { workspace = true }
+pemrix-storage = { workspace = true }
+pemrix-crypto = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

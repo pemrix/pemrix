@@ -1,0 +1,211 @@
+---
+title: Relay AI
+description: Detect flaky tests, auto-retry failures, and surface actionable insights from your pipeline data.
+---
+
+## Overview
+
+Relay AI analyzes test history, failure patterns, and timing data across your pipelines. It flags flaky tests, suggests retries, and summarizes failures so you spend less time digging through logs.
+
+<Steps>
+
+<Step>
+### Enable Relay AI
+
+Turn on AI features in your organization settings or per repository:
+
+```yaml title="relay.yaml"
+ai:
+  flaky_detection: true
+  auto_retry:
+    enabled: true
+    max_attempts: 2
+  insights: true
+```
+
+</Step>
+
+<Step>
+### Mark tests for analysis
+
+Relay AI inspects JUnit, TAP, and custom report formats automatically when uploaded:
+
+```yaml
+jobs:
+  test:
+    runs-on: relay-linux-medium
+    steps:
+      - run: npm test -- --reporter=junit --outputFile=results.xml
+      - uses: relay/upload-results@v1
+        with:
+          path: results.xml
+```
+
+</Step>
+
+<Step>
+### Review flaky-test reports
+
+After a few pipeline runs, open **Insights → Flaky Tests** to see quarantined tests, failure rates, and recommended fixes.
+
+</Step>
+
+</Steps>
+
+## Flaky test detection
+
+<Tabs items={['Detection', 'Auto-retry', 'Quarantine']}>
+
+<Tab value="Detection">
+### How detection works
+
+Relay AI compares outcomes across branches, matrix legs, and historical runs. A test is flagged flaky when it fails intermittently without code changes.
+
+```yaml
+ai:
+  flaky_detection:
+    threshold: 0.15
+    window: 30d
+    min_runs: 10
+```
+
+</Tab>
+
+<Tab value="Auto-retry">
+### Auto-retry failed steps
+
+Retry only steps that AI classifies as likely transient:
+
+```yaml
+jobs:
+  e2e:
+    steps:
+      - run: npm run test:e2e
+        retry:
+          when: relay.ai.flaky
+          max: 2
+          backoff: exponential
+```
+
+</Tab>
+
+<Tab value="Quarantine">
+### Quarantine without blocking CI
+
+Move persistently flaky tests to a non-blocking job while you fix them:
+
+```yaml
+jobs:
+  quarantine:
+    if: relay.ai.quarantined_tests != ''
+    continue-on-error: true
+    steps:
+      - run: npm run test:quarantine
+```
+
+</Tab>
+
+</Tabs>
+
+## Failure summaries
+
+Relay AI generates concise failure summaries on pull requests:
+
+<Files>
+  <Folder name="relay-insights" defaultOpen>
+    <Folder name="reports">
+      <File name="flaky-tests.json" />
+      <File name="failure-summary.md" />
+      <File name="timing-regressions.json" />
+    </Folder>
+    <File name="relay.yaml" />
+  </Folder>
+</Files>
+
+```yaml
+- uses: relay/ai-summary@v1
+  with:
+    post-to: pull_request
+    include:
+      - root_cause
+      - suggested_fix
+      - related_commits
+```
+
+## Advanced configuration
+
+<Accordions>
+
+<Accordion title="Custom models">
+Route summaries to your preferred model provider (OpenAI, Anthropic, or self-hosted):
+
+```yaml
+ai:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+  api_key: ${{ secrets.RELAY_AI_KEY }}
+```
+
+</Accordion>
+
+<Accordion title="Noise filtering">
+Ignore known infrastructure failures:
+
+```yaml
+ai:
+  ignore_patterns:
+    - 'ECONNRESET'
+    - 'ETIMEDOUT'
+    - 'runner lost connection'
+```
+
+</Accordion>
+
+<Accordion title="Team notifications">
+Alert on new flaky tests via Slack or email:
+
+```yaml
+ai:
+  notify:
+    slack: '#ci-alerts'
+    on: [new_flaky_test, retry_exhausted]
+```
+
+</Accordion>
+
+</Accordions>
+
+## API Reference
+
+<TypeTable
+  type={{
+    flaky_detection: {
+      description: 'Enable statistical flaky-test analysis',
+      type: 'boolean | object',
+      required: false,
+      default: 'false',
+    },
+    auto_retry: {
+      description: 'Retry steps classified as flaky or transient',
+      type: 'object',
+      required: false,
+    },
+    insights: {
+      description: 'Publish timing and failure dashboards',
+      type: 'boolean',
+      required: false,
+      default: 'true',
+    },
+  }}
+/>
+
+## Best Practices
+
+> **Pro Tip**: Let Relay AI collect at least 10 runs on main before tuning quarantine thresholds.
+
+- Upload structured test results on every pipeline run
+- Start with auto-retry before quarantining to avoid hiding real failures
+- Review AI summaries on failed PRs before re-running blindly
+- Combine AI insights with deploy gates for production releases
+
+<Badge variant="muted">AI enabled</Badge>

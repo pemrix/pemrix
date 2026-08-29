@@ -1,0 +1,47 @@
+[package]
+name = "pemrix-node"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "PEMRIX validator and full-node binary library."
+
+[lib]
+name = "pemrix_node"
+path = "src/lib.rs"
+
+[[bin]]
+name = "pemrix-node"
+path = "src/main.rs"
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+pemrix-crypto = { workspace = true }
+pemrix-storage = { workspace = true }
+pemrix-network = { workspace = true }
+pemrix-consensus = { workspace = true }
+pemrix-vm = { workspace = true }
+pemrix-rpc = { workspace = true }
+pemrix-faucet = { workspace = true }
+pemrix-explorer = { workspace = true }
+pemrix-webhooks = { workspace = true }
+pemrix-testnet = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+
+[features]
+default = []
+grpc = ["pemrix-rpc/grpc"]
+
+[dev-dependencies]
+reqwest = { workspace = true }
+serde_json = { workspace = true }
+tracing-subscriber = { workspace = true }

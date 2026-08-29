@@ -1,0 +1,15 @@
+---
+title: 'Relay AI flaky-test detection GA'
+date: 'APR 25 2025'
+id: '01'
+---
+
+Relay AI is generally available. Pipelines can now detect flaky tests, auto-retry transient failures, and post AI-generated summaries on pull requests.
+
+- **Flaky-test detection** — statistical analysis across branches and matrix legs flags tests with intermittent failures
+- **Auto-retry** — configure `retry.when: relay.ai.flaky` on any step to retry only likely-transient failures
+- **PR summaries** — `relay/ai-summary@v1` posts root-cause analysis and suggested fixes on failed builds
+- **Quarantine workflow** — move persistently flaky tests to non-blocking jobs without stopping the pipeline
+- **Insights dashboard** — new Flaky Tests and Timing Regressions views under **Insights**
+
+Enable Relay AI in **Settings → AI** or add an `ai:` block to `relay.yaml`. See the [Relay AI docs](/docs/ai-prompts) for configuration examples.

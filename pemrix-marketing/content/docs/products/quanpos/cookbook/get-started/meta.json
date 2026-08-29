@@ -1,0 +1,11 @@
+{
+  "title": "Get Started",
+  "pages": [
+    "quickstart",
+    "migrate-to-openrouter",
+    "enterprise-onboarding-journey",
+    "enterprise-quickstart",
+    "free-models-router-playground"
+  ],
+  "icon": "rocket"
+}

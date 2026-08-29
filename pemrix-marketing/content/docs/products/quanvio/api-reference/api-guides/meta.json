@@ -1,0 +1,14 @@
+{
+  "title": "API Guides",
+  "pages": [
+    "overview",
+    "streaming",
+    "embeddings",
+    "limits",
+    "authentication",
+    "parameters",
+    "errors-and-debugging",
+    "responses-api"
+  ],
+  "icon": "code"
+}

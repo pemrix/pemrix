@@ -1,0 +1,24 @@
+[package]
+name = "pemrix-consensus"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "Consensus engine for PEMRIX: BFT + Proof-of-Stake."
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+pemrix-crypto = { workspace = true }
+pemrix-storage = { workspace = true }
+pemrix-vm = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+serde = { workspace = true }
+async-trait = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

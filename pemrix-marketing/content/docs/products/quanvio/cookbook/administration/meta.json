@@ -1,0 +1,15 @@
+{
+  "title": "Administration",
+  "pages": [
+    "activity-export",
+    "api-key-rotation",
+    "analytics-cost-control",
+    "crypto-api",
+    "data-api",
+    "organization-management",
+    "tax-id",
+    "usage-accounting",
+    "user-tracking"
+  ],
+  "icon": "chart-line"
+}

@@ -1,0 +1,24 @@
+[package]
+name = "pemrix-sdk"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+description = "Rust SDK for building applications on PEMRIX."
+
+[dependencies]
+pemrix-primitives = { workspace = true }
+pemrix-crypto = { workspace = true }
+pemrix-rpc = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+reqwest = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

@@ -1,0 +1,394 @@
+---
+title: API Reference
+description: Complete relay.yaml schema, job configuration, expressions, triggers, and built-in actions.
+---
+
+## Overview
+
+Pipelines in Relay are defined in `relay.yaml` at the repository root. The file declares version, triggers, jobs, runner targets, environment variables, and caching behavior — all version-controlled alongside your code.
+
+```yaml title="relay.yaml"
+version: 1
+name: acme-web
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: relay-linux-medium
+    steps:
+      - uses: relay/checkout@v4
+      - run: npm test
+```
+
+## Top-level schema
+
+<TypeTable
+  type={{
+    version: {
+      description: 'Configuration schema version. Always use 1 for current Relay releases.',
+      type: 'number',
+      required: true,
+      default: '1',
+    },
+    name: {
+      description: 'Human-readable pipeline name shown in the Relay dashboard.',
+      type: 'string',
+      required: false,
+    },
+    on: {
+      description: 'Git events that trigger the pipeline (push, pull_request, schedule, workflow_dispatch).',
+      type: 'object',
+      required: true,
+    },
+    env: {
+      description: 'Default environment variables applied to every job unless overridden.',
+      type: 'object',
+      required: false,
+    },
+    defaults: {
+      description: 'Shared defaults for runs-on, timeout, and permissions across jobs.',
+      type: 'object',
+      required: false,
+    },
+    jobs: {
+      description: 'Map of job IDs to job definitions. At least one job is required.',
+      type: 'object',
+      required: true,
+    },
+  }}
+/>
+
+## Triggers
+
+Configure when Relay runs your pipeline with the `on` block:
+
+```yaml
+on:
+  push:
+    branches: [main, release/*]
+    paths:
+      - 'src/**'
+      - 'relay.yaml'
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: staging
+```
+
+| Event | Description |
+| --- | --- |
+| `push` | Runs on commits to matching branches or tags |
+| `pull_request` | Runs for PR lifecycle events (open, sync, reopen) |
+| `schedule` | Cron-based runs in UTC |
+| `workflow_dispatch` | Manual runs with optional inputs from the dashboard |
+
+## Job schema
+
+Each job runs in an isolated workspace on the selected runner. Jobs without `needs` run in parallel when runners are available.
+
+<TypeTable
+  type={{
+    'runs-on': {
+      description: 'Runner target — cloud label (relay-linux-medium) or self-hosted label set',
+      type: 'string | string[]',
+      required: true,
+    },
+    needs: {
+      description: 'Job IDs that must succeed before this job starts',
+      type: 'string | string[]',
+      required: false,
+    },
+    if: {
+      description: 'Conditional expression — skip the job when false',
+      type: 'string',
+      required: false,
+    },
+    steps: {
+      description: 'Ordered list of shell commands or reusable actions',
+      type: 'Step[]',
+      required: true,
+    },
+    strategy: {
+      description: 'Matrix configuration for parallel fan-out across dimensions',
+      type: 'object',
+      required: false,
+    },
+    environment: {
+      description: 'Named deployment target with optional URL and approval rules',
+      type: 'string | object',
+      required: false,
+    },
+    timeout: {
+      description: 'Maximum job duration before cancellation',
+      type: 'string',
+      required: false,
+      default: '"360m"',
+    },
+    concurrency: {
+      description: 'Concurrency group — cancel-in-progress or queue overlapping runs',
+      type: 'string | object',
+      required: false,
+    },
+    permissions: {
+      description: 'OIDC and repository permissions scoped to the job',
+      type: 'object',
+      required: false,
+    },
+    env: {
+      description: 'Job-scoped environment variables',
+      type: 'object',
+      required: false,
+    },
+  }}
+/>
+
+## Steps
+
+Steps execute sequentially within a job. Use `run` for shell commands or `uses` for built-in actions.
+
+<TypeTable
+  type={{
+    run: {
+      description: 'Shell command executed in the job workspace',
+      type: 'string',
+      required: false,
+    },
+    uses: {
+      description: 'Built-in or composite action (relay/checkout@v4, relay/deploy@v2)',
+      type: 'string',
+      required: false,
+    },
+    with: {
+      description: 'Input parameters passed to the action',
+      type: 'object',
+      required: false,
+    },
+    env: {
+      description: 'Step-scoped environment variables',
+      type: 'object',
+      required: false,
+    },
+    if: {
+      description: 'Conditional expression — skip the step when false',
+      type: 'string',
+      required: false,
+    },
+    name: {
+      description: 'Display name shown in logs and the dashboard',
+      type: 'string',
+      required: false,
+    },
+    'working-directory': {
+      description: 'Relative path for the step working directory',
+      type: 'string',
+      required: false,
+    },
+  }}
+/>
+
+```yaml
+jobs:
+  lint:
+    runs-on: relay-linux-small
+    steps:
+      - uses: relay/checkout@v4
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+        if: github.event_name == 'pull_request'
+```
+
+## Matrix builds
+
+Matrix jobs expand into multiple parallel runs. Relay deduplicates cache restores across matrix legs when keys overlap.
+
+```yaml
+jobs:
+  test:
+    runs-on: relay-linux-medium
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22]
+        os: [linux, macos]
+    steps:
+      - uses: relay/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+```
+
+<TypeTable
+  type={{
+    'strategy.matrix': {
+      description: 'Dimensions to fan out — each combination runs as a separate job',
+      type: 'object',
+      required: true,
+    },
+    'strategy.fail-fast': {
+      description: 'Cancel remaining matrix legs when one leg fails',
+      type: 'boolean',
+      required: false,
+      default: 'true',
+    },
+    'strategy.max-parallel': {
+      description: 'Cap concurrent matrix legs',
+      type: 'number',
+      required: false,
+    },
+  }}
+/>
+
+## Caching
+
+Define cache paths and keys explicitly, or use built-in actions. Remote cache hits are shared across branches and pull requests in the same repository.
+
+```yaml
+jobs:
+  build:
+    runs-on: relay-linux-medium
+    steps:
+      - uses: relay/checkout@v4
+      - uses: relay/cache@v3
+        with:
+          path: |
+            node_modules
+            .next/cache
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - run: npm ci
+      - run: npm run build
+```
+
+<TypeTable
+  type={{
+    path: {
+      description: 'Files or directories to cache (supports glob patterns)',
+      type: 'string',
+      required: true,
+    },
+    key: {
+      description: 'Exact cache key — use hashFiles() for content-addressable keys',
+      type: 'string',
+      required: true,
+    },
+    'restore-keys': {
+      description: 'Prefix keys tried in order when an exact match is missing',
+      type: 'string',
+      required: false,
+    },
+  }}
+/>
+
+## Environments and secrets
+
+Gate production deploys with approval rules and inject secrets via OIDC or encrypted vault references. Never commit credentials to `relay.yaml`.
+
+```yaml
+jobs:
+  deploy:
+    runs-on: relay-linux-medium
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://app.example.com
+    permissions:
+      id-token: write
+    steps:
+      - uses: relay/checkout@v4
+      - uses: relay/deploy@v2
+        with:
+          rollback-on-failure: true
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+```
+
+## Expression syntax
+
+Relay evaluates expressions in `${{ }}` blocks. Common contexts:
+
+| Context | Example | Description |
+| --- | --- | --- |
+| `github.ref` | `refs/heads/main` | Git ref that triggered the run |
+| `github.sha` | `abc123…` | Commit SHA for the run |
+| `github.event_name` | `pull_request` | Event that triggered the pipeline |
+| `matrix.*` | `${{ matrix.node }}` | Current matrix dimension value |
+| `runner.os` | `Linux` | OS of the active runner |
+| `secrets.*` | `${{ secrets.API_KEY }}` | Organization or repo secret |
+| `env.*` | `${{ env.BUILD_ID }}` | Job or step environment variable |
+| `hashFiles()` | `${{ hashFiles('**/package-lock.json') }}` | Content hash for cache keys |
+
+## Built-in actions
+
+| Action | Purpose |
+| --- | --- |
+| `relay/checkout@v4` | Clone the repository at the triggering ref |
+| `relay/setup-node@v4` | Install Node.js with optional dependency caching |
+| `relay/cache@v3` | Save and restore workspace caches |
+| `relay/deploy@v2` | Deploy to a configured environment with rollback support |
+| `relay/aws-oidc@v1` | Assume an AWS role via OIDC without long-lived keys |
+
+## Full example
+
+```yaml title="relay.yaml"
+version: 1
+name: acme-web
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  NODE_ENV: test
+
+jobs:
+  test:
+    runs-on: relay-linux-medium
+    strategy:
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: relay/checkout@v4
+      - uses: relay/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  deploy:
+    needs: test
+    runs-on: relay-linux-medium
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - uses: relay/checkout@v4
+      - run: npm run build
+      - uses: relay/deploy@v2
+        with:
+          environment: production
+```
+
+## Best practices
+
+- Keep jobs focused — split build, test, and deploy for faster feedback
+- Use matrix builds for cross-platform coverage without duplicate config
+- Prefer `hashFiles()` cache keys tied to lockfiles
+- Store secrets in the Relay vault; reference them with `${{ secrets.* }}`
+- Set `fail-fast: false` on matrices when you need full cross-version signal
+
+<Badge>Config complete</Badge>

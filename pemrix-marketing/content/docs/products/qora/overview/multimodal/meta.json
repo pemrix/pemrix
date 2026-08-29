@@ -1,0 +1,15 @@
+{
+  "title": "Multimodal",
+  "pages": [
+    "overview",
+    "image-generation",
+    "video-generation",
+    "tts",
+    "stt",
+    "audio",
+    "pdfs",
+    "image-understanding",
+    "videos"
+  ],
+  "icon": "layers"
+}

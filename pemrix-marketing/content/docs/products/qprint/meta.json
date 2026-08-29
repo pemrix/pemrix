@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "overview",
+    "models-routing",
+    "tool-calling",
+    "features",
+    "ori",
+    "privacy",
+    "best-practices",
+    "community",
+    "api-reference",
+    "client-sdks",
+    "agent-sdk",
+    "cookbook"
+  ]
+}
