@@ -12,6 +12,7 @@ description = "Execution layer and WASM-based smart contract VM for PEMRIX."
 [dependencies]
 pemrix-primitives = { workspace = true }
 pemrix-storage = { workspace = true }
+pemrix-crypto = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

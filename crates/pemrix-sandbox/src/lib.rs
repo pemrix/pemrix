@@ -179,17 +179,36 @@ impl Default for Sandbox {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pemrix_crypto::{Ed25519Scheme, SignatureScheme};
+
+    fn random_keypair() -> (pemrix_crypto::KeyPair, Address) {
+        let scheme = Ed25519Scheme::new();
+        let kp = scheme.generate_keypair().unwrap();
+        let address = Address::from_public_key_hash(Hash::hash_bytes(&kp.public.0));
+        (kp, address)
+    }
+
+    fn sign_tx(tx: &mut Transaction, keypair: &pemrix_crypto::KeyPair) {
+        tx.public_key = keypair.public.0.clone();
+        tx.sender = Address::from_public_key_hash(Hash::hash_bytes(&tx.public_key));
+        let scheme = Ed25519Scheme::new();
+        let sig = scheme
+            .sign(&keypair.secret, tx.signing_hash().as_bytes())
+            .unwrap();
+        tx.signature = sig.0;
+    }
 
     #[tokio::test]
     async fn sandbox_funds_and_transfers() {
         let mut sandbox = Sandbox::default();
-        let alice = Address::from_public_key_hash(Hash::hash_bytes(b"alice"));
+        let (alice_kp, alice) = random_keypair();
         let bob = Address::from_public_key_hash(Hash::hash_bytes(b"bob"));
 
         sandbox.fund(alice, 1_000).unwrap();
         assert_eq!(sandbox.balance(&alice).unwrap(), 1_000);
 
-        let tx = Transaction::transfer(alice, bob, 100, 0, 1);
+        let mut tx = Transaction::transfer(alice, bob, 100, 0, 1);
+        sign_tx(&mut tx, &alice_kp);
         sandbox.submit(tx).unwrap();
 
         let block = sandbox.produce_block().await.unwrap();
@@ -202,11 +221,12 @@ mod tests {
     #[tokio::test]
     async fn sandbox_queries_block_and_transaction() {
         let mut sandbox = Sandbox::default();
-        let alice = Address::from_public_key_hash(Hash::hash_bytes(b"alice"));
+        let (alice_kp, alice) = random_keypair();
         let bob = Address::from_public_key_hash(Hash::hash_bytes(b"bob"));
 
         sandbox.fund(alice, 1_000).unwrap();
-        let tx = Transaction::transfer(alice, bob, 50, 0, 1);
+        let mut tx = Transaction::transfer(alice, bob, 50, 0, 1);
+        sign_tx(&mut tx, &alice_kp);
         let tx_hash = tx.hash();
         sandbox.submit(tx).unwrap();
 

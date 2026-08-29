@@ -64,17 +64,21 @@ impl TransactionBuilder {
             amount: self.amount,
             nonce: self.nonce,
             fee: self.fee,
+            public_key: Vec::new(),
+            signature: Vec::new(),
             payload: self.payload,
         }
     }
 
     /// Build and sign the transaction.
     pub fn sign(self, keypair: &KeyPair) -> Transaction {
-        let tx = self.build();
+        let mut tx = self.build();
         let scheme = Ed25519Scheme::new();
-        let _signature = scheme
-            .sign(&keypair.secret, &tx.hash().to_string().into_bytes())
+        tx.public_key = keypair.public.0.clone();
+        let signature = scheme
+            .sign(&keypair.secret, tx.signing_hash().as_bytes())
             .expect("signing should succeed");
+        tx.signature = signature.0;
         tx
     }
 }

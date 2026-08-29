@@ -193,14 +193,13 @@ async fn request_handler(
     }
 
     let nonce = state.submitter.nonce(&state.faucet_address).await;
-    let tx = Transaction::transfer(state.faucet_address, recipient, amount, nonce, 0);
+    let mut tx = Transaction::transfer(state.faucet_address, recipient, amount, nonce, 0);
+    tx.public_key = state.faucet_keypair.public.0.clone();
     let scheme = Ed25519Scheme::new();
-    let _sig = scheme
-        .sign(
-            &state.faucet_keypair.secret,
-            &tx.hash().to_string().into_bytes(),
-        )
+    let sig = scheme
+        .sign(&state.faucet_keypair.secret, tx.signing_hash().as_bytes())
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    tx.signature = sig.0;
 
     match state.submitter.submit(tx).await {
         Ok(hash) => {

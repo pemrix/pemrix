@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Date:** 2026-08-28  
 **Status:** Phase 4 Mainnet Genesis Started  
-**Overall Completion:** ~45%
+**Overall Completion:** ~46%
 
 ---
 
@@ -942,5 +942,5 @@ The architecture enforces a **tiny consensus core** surrounded by **modular serv
 
 Quanvio Labs originates the network, but PEMRIX is architected to become independent through open-source development, foundation stewardship, and decentralized governance.
 
-**Current state:** Phase 1 core protocol now includes a multi-validator BFT consensus engine, a real TCP gossip transport, a BFT validator node mode for `pemrix-node start`, and end-to-end integration tests proving four validators can finalize a block over localhost TCP. Phase 2 developer platform is active; `pemrix testnet` runs both solo consensus and multi-validator BFT consensus in a single process (`--validators N`), sharing RPC, faucet, explorer, and webhook services. The SDK now has a real HTTP client (`HttpClient`) and faucet client that talk to the testnet RPC and faucet endpoints, plus a `/v1/accounts/:address/nonce` endpoint. Phase 3 security docs, fuzzing, and portal are in place. Phase 4 genesis block builder and tokenomics schedule (`TokenomicsConfig`) are implemented. A wallet-to-merchant QR payment demo (`pemrix demo`) is now functional: it funds a payer wallet from the faucet, displays a merchant QR payload, submits a transfer transaction over HTTP, and confirms the merchant balance updates on-chain. All PEMRIX service ports have been corrected to the valid 16-bit TCP/UDP range (60001/60002/60101/60102/60103/60303). Overall ~45%. Public testnet deployment, validator selection, and public bug bounty launch remain.
+**Current state:** Phase 1 core protocol now includes a multi-validator BFT consensus engine, a real TCP gossip transport, a BFT validator node mode for `pemrix-node start`, and end-to-end integration tests proving four validators can finalize a block over localhost TCP. Phase 2 developer platform is active; `pemrix testnet` runs both solo consensus and multi-validator BFT consensus in a single process (`--validators N`), sharing RPC, faucet, explorer, and webhook services. The SDK now has a real HTTP client (`HttpClient`) and faucet client that talk to the testnet RPC and faucet endpoints, plus a `/v1/accounts/:address/nonce` endpoint. Phase 3 security hardening now includes Ed25519 signature verification in the native VM; every transaction must carry a valid public key and signature matching the sender address. The local testnet faucet uses a deterministic keypair derived from a fixed seed so its signed transactions pass verification. Phase 4 genesis block builder and tokenomics schedule (`TokenomicsConfig`) are implemented. A wallet-to-merchant QR payment demo (`pemrix demo`) is functional end-to-end. All PEMRIX service ports are in the valid 16-bit range (60001/60002/60101/60102/60103/60303). Overall ~46%. Validator onboarding, live infrastructure, public testnet, and mainnet launch remain.
 **Immediate next step:** Harden consensus networking and begin public testnet deployment planning (Phase 2b / Phase 3).

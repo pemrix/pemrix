@@ -28,13 +28,13 @@ This document is the single source of truth for what must be built, in what orde
 | 0 | Foundation (Git, CI/CD, docs) | In progress | 5% | — |
 | 1 | Core Protocol (consensus, execution, networking) | Done | 15% | 15% |
 | 2 | Developer Platform (SDK, RPC, testnet, demos) | Done | 15% | 15% |
-| 3 | Security & Hardening | In progress | 20% | 4% |
+| 3 | Security & Hardening | In progress | 20% | 6% |
 | 4 | Tokenomics & Genesis | Done | 10% | 10% |
 | 5 | Validator Onboarding (Quanvio genesis validators) | Not started | 15% | 0% |
 | 6 | Live Infrastructure (RPC, explorer, faucet, pemrix.com) | Not started | 10% | 0% |
 | 7 | Public Testnet & Bug Bounty | Not started | 5% | 0% |
 | 8 | Mainnet Launch | Not started | 5% | 0% |
-| **Total** | | | **100%** | **~44%** |
+| **Total** | | | **100%** | **~46%** |
 
 ---
 
@@ -110,7 +110,7 @@ This document is the single source of truth for what must be built, in what orde
 |---|---|---|---|
 | 3.1 | Threat model document | Done | `docs/SECURITY/` |
 | 3.2 | Fuzzing harness for primitives and VM | Partial | `pemrix-sandbox` exists, more fuzzing needed |
-| 3.3 | Signature verification in transaction execution | Not started | Currently only sender address is checked |
+| 3.3 | Signature verification in transaction execution | Done | Ed25519 signature verified in NativeExecutor |
 | 3.4 | Input validation and rate limiting on RPC | Not started | Limit request sizes, request rates |
 | 3.5 | Slashing conditions implemented | Partial | Double-sign detection exists, slashing logic needed |
 | 3.6 | Crypto-agility framework | Partial | Design in place, hybrid signatures not implemented |

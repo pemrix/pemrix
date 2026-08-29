@@ -32,6 +32,8 @@ fn any_transaction() -> impl Strategy<Value = Transaction> {
                 amount,
                 nonce,
                 fee,
+                public_key: Vec::new(),
+                signature: Vec::new(),
                 payload,
             },
         )

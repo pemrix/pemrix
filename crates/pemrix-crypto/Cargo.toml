@@ -13,6 +13,7 @@ description = "Cryptographic primitives and signature abstraction for PEMRIX."
 pemrix-primitives = { workspace = true }
 thiserror = { workspace = true }
 ed25519-dalek = { workspace = true }
+blake3 = { workspace = true }
 rand = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

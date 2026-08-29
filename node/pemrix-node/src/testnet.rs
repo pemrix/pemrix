@@ -7,7 +7,6 @@ use crate::{spawn_bft_validator, GenesisConfig, NodeConfig, NodeError};
 use pemrix_consensus::{
     ConsensusEngine, Mempool, SimpleMempool, SoloConsensus, Validator, ValidatorSet,
 };
-use pemrix_crypto::{Ed25519Scheme, SignatureScheme};
 use pemrix_explorer::ExplorerService;
 use pemrix_faucet::{FaucetConfig, FaucetService, LocalSubmitter};
 use pemrix_network::MockTransport;
@@ -301,8 +300,8 @@ async fn spawn_shared_services(
     let faucet_account = testnet.faucet_account().copied().unwrap_or_default();
     rpc_state.set_account(faucet_address, faucet_account).await;
 
-    let faucet_keypair = Ed25519Scheme::new()
-        .generate_keypair()
+    let faucet_keypair = testnet
+        .faucet_keypair()
         .map_err(|_| NodeError::Config("failed to generate faucet keypair".to_string()))?;
     let submitter = Arc::new(LocalSubmitter::new(rpc_state.clone(), faucet_address));
     let faucet_config = FaucetConfig {

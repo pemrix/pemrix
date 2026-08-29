@@ -15,6 +15,9 @@ pub enum VmError {
     /// Invalid contract.
     #[error("invalid contract")]
     InvalidContract,
+    /// Invalid signature.
+    #[error("invalid signature")]
+    InvalidSignature,
     /// Storage error.
     #[error("storage error")]
     Storage,

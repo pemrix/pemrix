@@ -14,6 +14,25 @@ impl Ed25519Scheme {
     }
 }
 
+impl Ed25519Scheme {
+    /// Derive a deterministic keypair from a seed.
+    ///
+    /// The seed is hashed to 32 bytes and used as the secret key. The public key
+    /// is derived from the secret key. This is useful for testnets and
+    /// deterministic accounts; never use it for production keys unless the seed
+    /// has high entropy.
+    pub fn keypair_from_seed(seed: &[u8]) -> Result<KeyPair, CryptoError> {
+        let hash = blake3::hash(seed);
+        let secret_bytes = hash.as_bytes();
+        let signing_key = ed25519_dalek::SigningKey::from_bytes(secret_bytes);
+        let verifying_key = signing_key.verifying_key();
+        Ok(KeyPair {
+            public: PublicKey(verifying_key.to_bytes().to_vec()),
+            secret: SecretKey(signing_key.to_bytes().to_vec()),
+        })
+    }
+}
+
 impl SignatureScheme for Ed25519Scheme {
     fn generate_keypair(&self) -> Result<KeyPair, CryptoError> {
         let mut rng = rand::thread_rng();

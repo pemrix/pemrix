@@ -125,15 +125,34 @@ impl ConsensusEngine for SoloConsensus {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pemrix_crypto::{Ed25519Scheme, SignatureScheme};
+
+    fn random_keypair() -> (pemrix_crypto::KeyPair, Address) {
+        let scheme = Ed25519Scheme::new();
+        let kp = scheme.generate_keypair().unwrap();
+        let address = Address::from_public_key_hash(Hash::hash_bytes(&kp.public.0));
+        (kp, address)
+    }
+
+    fn sign_tx(tx: &mut Transaction, keypair: &pemrix_crypto::KeyPair) {
+        tx.public_key = keypair.public.0.clone();
+        tx.sender = Address::from_public_key_hash(Hash::hash_bytes(&tx.public_key));
+        let scheme = Ed25519Scheme::new();
+        let sig = scheme
+            .sign(&keypair.secret, tx.signing_hash().as_bytes())
+            .unwrap();
+        tx.signature = sig.0;
+    }
 
     #[tokio::test]
     async fn solo_consensus_produces_block() {
         let proposer = Address::default();
-        let sender = Address::from_public_key_hash(Hash::hash_bytes(b"sender"));
+        let (sender_kp, sender) = random_keypair();
         let recipient = Address::from_public_key_hash(Hash::hash_bytes(b"recipient"));
         let mut engine = SoloConsensus::new(proposer);
         engine.fund(sender, 1_000);
-        let tx = Transaction::transfer(sender, recipient, 100, 0, 1);
+        let mut tx = Transaction::transfer(sender, recipient, 100, 0, 1);
+        sign_tx(&mut tx, &sender_kp);
         let block = engine.propose(1, vec![tx]).await.unwrap();
         assert_eq!(block.header.height, 1);
     }

@@ -1,7 +1,10 @@
 //! Testnet configuration.
 
-use pemrix_crypto::{Ed25519Scheme, SignatureScheme};
+use pemrix_crypto::Ed25519Scheme;
 use pemrix_primitives::{Account, Address, Hash};
+
+/// Seed used to derive the deterministic local testnet faucet keypair.
+const LOCAL_FAUCET_SEED: &[u8] = b"pemrix-local-testnet-faucet-v1";
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -64,8 +67,13 @@ impl TestnetConfig {
             allocations.insert(address, Account::new(1_000_000, 0));
         }
 
-        // Faucet account.
-        let faucet_address = Address::from_public_key_hash(Hash::hash_bytes(b"faucet"));
+        // Faucet account. The address is derived from a deterministic keypair so
+        // that the faucet service can sign transactions that pass signature
+        // verification.
+        let faucet_keypair = Ed25519Scheme::keypair_from_seed(LOCAL_FAUCET_SEED)
+            .expect("deterministic faucet keypair should be valid");
+        let faucet_address =
+            Address::from_public_key_hash(Hash::hash_bytes(&faucet_keypair.public.0));
         let faucet_account = Account::new(1_000_000_000, 0);
 
         let bind_host = std::env::var("PEMRIX_BIND_HOST")
@@ -114,10 +122,8 @@ impl TestnetConfig {
     /// Generate a faucet key pair for the first faucet account.
     pub fn faucet_keypair(&self) -> Result<pemrix_crypto::KeyPair, &'static str> {
         // In a real deployment, the faucet key must be loaded from secure storage.
-        // For testnet scaffolding we use a deterministic key derived from the chain id.
-        let scheme = Ed25519Scheme::new();
-        scheme
-            .generate_keypair()
+        // For local testnet we use a deterministic key derived from a fixed seed.
+        Ed25519Scheme::keypair_from_seed(LOCAL_FAUCET_SEED)
             .map_err(|_| "failed to generate faucet keypair")
     }
 

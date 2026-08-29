@@ -67,6 +67,8 @@ fn proto_to_transaction(proto: ProtoTransaction) -> Result<Transaction, Status> 
             .fee
             .parse::<u128>()
             .map_err(|e| Status::invalid_argument(format!("invalid fee: {e}")))?,
+        public_key: Vec::new(),
+        signature: Vec::new(),
         payload: proto.payload,
     })
 }
