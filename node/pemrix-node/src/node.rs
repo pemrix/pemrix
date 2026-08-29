@@ -263,6 +263,7 @@ async fn run_bft_validator(
                 height,
                 block.hash()
             );
+            info!("[validator {}] broadcasting block height={} hash={}", local_address, height, block.hash());
             if let Err(e) = transport.broadcast(Message::Block(block)).await {
                 warn!("[validator {}] Broadcast failed: {}", local_address, e);
             }
@@ -272,7 +273,10 @@ async fn run_bft_validator(
             // same height.
             if let Some(vote) = consensus.lock().await.own_vote(height) {
                 let bytes = pemrix_primitives::encoding::encode(&vote);
-                let _ = transport.broadcast(Message::Vote(bytes)).await;
+                info!("[validator {}] broadcasting proposer vote height={} hash={}", local_address, vote.height, vote.block_hash);
+                if let Err(e) = transport.broadcast(Message::Vote(bytes)).await {
+                    warn!("[validator {}] proposer vote broadcast failed: {}", local_address, e);
+                }
             }
 
             // The proposer auto-voted; try to finalize immediately (useful for
@@ -306,36 +310,55 @@ async fn run_network_event_loop(
             Some(NetworkEvent::PeerDisconnected(peer)) => {
                 warn!("Peer disconnected: {:?}", peer);
             }
-            Some(NetworkEvent::MessageReceived(_peer, Message::Block(block))) => {
+            Some(NetworkEvent::MessageReceived(peer, Message::Block(block))) => {
+                info!(
+                    "[network] received Block from {:?} height={} hash={}",
+                    peer,
+                    block.header.height,
+                    block.hash()
+                );
                 let own_vote = {
                     let mut c = consensus.lock().await;
                     match c.handle_block(block).await {
                         Ok(vote) => Some(vote),
                         Err(e) => {
-                            warn!("Failed to handle block proposal: {}", e);
+                            warn!("[network] handle_block failed: {}", e);
                             None
                         }
                     }
                 };
                 if let Some(vote) = own_vote {
                     let bytes = pemrix_primitives::encoding::encode(&vote);
-                    let _ = transport.broadcast(Message::Vote(bytes)).await;
+                    info!("[network] broadcasting own vote for height={} hash={}", vote.height, vote.block_hash);
+                    if let Err(e) = transport.broadcast(Message::Vote(bytes)).await {
+                        warn!("[network] vote broadcast failed: {}", e);
+                    }
                 }
 
                 if let Some(block) = consensus.lock().await.finalize_pending().await {
                     let _ = finalized_tx.send(block);
                 }
             }
-            Some(NetworkEvent::MessageReceived(_peer, Message::Vote(bytes))) => {
+            Some(NetworkEvent::MessageReceived(peer, Message::Vote(bytes))) => {
                 if let Ok(vote) = pemrix_primitives::encoding::decode::<Vote>(&bytes) {
+                    info!(
+                        "[network] received Vote from {:?} height={} voter={} hash={}",
+                        peer,
+                        vote.height,
+                        Address(vote.voter),
+                        vote.block_hash
+                    );
                     let finalized = {
                         let mut c = consensus.lock().await;
                         let _ = c.handle_vote(vote).await;
                         c.finalize_pending().await
                     };
                     if let Some(block) = finalized {
+                        info!("[network] finalized block height={} hash={}", block.header.height, block.hash());
                         let _ = finalized_tx.send(block);
                     }
+                } else {
+                    warn!("[network] failed to decode Vote from {:?}", peer);
                 }
             }
             Some(NetworkEvent::MessageReceived(_peer, _)) => {}
