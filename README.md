@@ -1,9 +1,5 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="logo/logo-mark-white.svg">
-    <source media="(prefers-color-scheme: light)" srcset="logo/logo-mark-black.svg">
-    <img alt="PEMRIX" src="logo/logo-mark-black.svg" width="90">
-  </picture>
+  <img alt="PEMRIX" src="logo/logo-mark-black.svg" width="90">
 </p>
 
 <h1 align="center">PEMRIX</h1>
