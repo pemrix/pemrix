@@ -184,8 +184,12 @@ async fn run_bft_validator(
     #[cfg(not(feature = "rocksdb"))]
     let state_store = open_state_store(&config.data_dir);
 
-    let mut consensus =
-        Consensus::new_with_store(local_address, validator_set.clone(), state_store, genesis_hash);
+    let mut consensus = Consensus::new_with_store(
+        local_address,
+        validator_set.clone(),
+        state_store,
+        genesis_hash,
+    );
     // Seed consensus state with genesis allocations.
     for (address, account) in &genesis.allocations {
         consensus

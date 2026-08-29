@@ -70,9 +70,8 @@ impl RocksDbBackend {
     pub fn open<P: AsRef<std::path::Path>>(path: P) -> Result<Self, StorageError> {
         let mut opts = rocksdb::Options::default();
         opts.create_if_missing(true);
-        let db = rocksdb::DB::open(&opts, path).map_err(|e| {
-            StorageError::Backend(format!("failed to open rocksdb: {e}"))
-        })?;
+        let db = rocksdb::DB::open(&opts, path)
+            .map_err(|e| StorageError::Backend(format!("failed to open rocksdb: {e}")))?;
         Ok(Self { db })
     }
 
@@ -119,9 +118,8 @@ impl StateBackend for RocksDbBackend {
         let mut accounts = std::collections::BTreeMap::new();
         let iter = self.db.iterator(rocksdb::IteratorMode::Start);
         for item in iter {
-            let (key, value) = item.map_err(|e| {
-                StorageError::Backend(format!("rocksdb iterator error: {e}"))
-            })?;
+            let (key, value) =
+                item.map_err(|e| StorageError::Backend(format!("rocksdb iterator error: {e}")))?;
             if key.starts_with(Self::ACCOUNT_PREFIX) {
                 let address_bytes: [u8; 32] = key[Self::ACCOUNT_PREFIX.len()..]
                     .try_into()
@@ -181,7 +179,9 @@ mod tests {
         let path = dir.path().to_path_buf();
         {
             let mut backend = RocksDbBackend::open(&path).unwrap();
-            backend.put_account(&Address::default(), &Account::new(999, 1)).unwrap();
+            backend
+                .put_account(&Address::default(), &Account::new(999, 1))
+                .unwrap();
         }
         {
             let backend = RocksDbBackend::open(&path).unwrap();

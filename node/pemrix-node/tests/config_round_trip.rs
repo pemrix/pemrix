@@ -21,7 +21,10 @@ fn bft_node_config_round_trip() {
 
     let peer = PeerId::from_public_key_hash(Hash::hash_bytes(b"peer"));
     let mut bootstrap = BTreeMap::new();
-    bootstrap.insert(peer, SocketAddr::from_str(&pemrix_ports::p2p_local_offset(3)).unwrap());
+    bootstrap.insert(
+        peer,
+        SocketAddr::from_str(&pemrix_ports::p2p_local_offset(3)).unwrap(),
+    );
 
     let config = NodeConfig {
         data_dir: "./test-data".to_string(),

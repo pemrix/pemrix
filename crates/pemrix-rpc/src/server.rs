@@ -245,39 +245,39 @@ async fn validate_transaction<'a>(
     state: &'a RpcState,
     tx: &'a Transaction,
 ) -> Result<Hash, StatusCode> {
-        // Basic field sizes for Ed25519.
-        if tx.public_key.len() != 32 || tx.signature.len() != 64 {
-            return Err(StatusCode::BAD_REQUEST);
-        }
+    // Basic field sizes for Ed25519.
+    if tx.public_key.len() != 32 || tx.signature.len() != 64 {
+        return Err(StatusCode::BAD_REQUEST);
+    }
 
-        // Sender address must match the hash of the provided public key.
-        let derived_address = Address::from_public_key_hash(Hash::hash_bytes(&tx.public_key));
-        if derived_address != tx.sender {
-            return Err(StatusCode::BAD_REQUEST);
-        }
+    // Sender address must match the hash of the provided public key.
+    let derived_address = Address::from_public_key_hash(Hash::hash_bytes(&tx.public_key));
+    if derived_address != tx.sender {
+        return Err(StatusCode::BAD_REQUEST);
+    }
 
-        // Verify the signature over the transaction signing hash.
-        let scheme = Ed25519Scheme::new();
-        let public_key = pemrix_crypto::PublicKey(tx.public_key.clone());
-        let signature = pemrix_crypto::Signature(tx.signature.clone());
-        scheme
-            .verify(&public_key, tx.signing_hash().as_bytes(), &signature)
-            .map_err(|_| StatusCode::BAD_REQUEST)?;
+    // Verify the signature over the transaction signing hash.
+    let scheme = Ed25519Scheme::new();
+    let public_key = pemrix_crypto::PublicKey(tx.public_key.clone());
+    let signature = pemrix_crypto::Signature(tx.signature.clone());
+    scheme
+        .verify(&public_key, tx.signing_hash().as_bytes(), &signature)
+        .map_err(|_| StatusCode::BAD_REQUEST)?;
 
-        // Check balance and nonce.
-        let total = tx.amount.saturating_add(tx.fee);
-        if let Some(account) = state.get_account(&tx.sender).await {
-            if account.balance < total {
-                return Err(StatusCode::PAYMENT_REQUIRED);
-            }
-            if account.nonce != tx.nonce {
-                return Err(StatusCode::CONFLICT);
-            }
-        } else {
+    // Check balance and nonce.
+    let total = tx.amount.saturating_add(tx.fee);
+    if let Some(account) = state.get_account(&tx.sender).await {
+        if account.balance < total {
             return Err(StatusCode::PAYMENT_REQUIRED);
         }
+        if account.nonce != tx.nonce {
+            return Err(StatusCode::CONFLICT);
+        }
+    } else {
+        return Err(StatusCode::PAYMENT_REQUIRED);
+    }
 
-        Ok(tx.hash())
+    Ok(tx.hash())
 }
 
 async fn send_transaction_handler(
@@ -376,7 +376,10 @@ mod tests {
         let mut tx = Transaction::transfer(sender, Address::default(), 100, 0, 1);
         tx.public_key = keypair.public.0;
         // signature left empty
-        server.state().set_account(sender, Account::new(1_000_000, 0)).await;
+        server
+            .state()
+            .set_account(sender, Account::new(1_000_000, 0))
+            .await;
 
         let app = server.router();
         let response = app
@@ -400,7 +403,10 @@ mod tests {
         let server = RpcServer::new("127.0.0.1:0");
         let (tx, _account) = signed_transfer(Address::default(), 100, 5, 1);
         // Account nonce is 0, transaction nonce is 5 -> mismatch.
-        server.state().set_account(tx.sender, Account::new(1_000_000, 0)).await;
+        server
+            .state()
+            .set_account(tx.sender, Account::new(1_000_000, 0))
+            .await;
 
         let app = server.router();
         let response = app
