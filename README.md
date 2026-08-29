@@ -143,19 +143,20 @@ Report vulnerabilities privately to `security@pemrix.com`.
 
 ---
 
-## Open Source, Hard to Copy
+## Open Source Is Non-Negotiable for Money
 
-The protocol is open source so validators, developers, and researchers can verify it. But open source does not mean easy to replicate.
+For a normal app, open source is a choice. For a blockchain that settles value, it is a requirement.
 
-The real defenses of a live network are:
+PEMRIX moves money, assets, and machine-owned value across a global network with no bank to call and no company to reverse a transaction. If the protocol were closed, users would have to trust a black box with their wealth. That is unacceptable for a system designed to outlive any company or country.
 
-- **Economic security** — the stake protecting the ledger.
-- **Adoption** — wallets, merchants, developers, and apps.
-- **Liquidity** — exchanges and fiat on/off-ramp partners.
-- **Trust over time** — years of reliable operation.
-- **Proprietary products** — the PEMRIX Wallet, Merchant Console, and fiat bridges can remain closed-source products built on the open protocol.
+Open source makes PEMRIX:
 
-The code is transparent. The network effect is the moat.
+- **Auditable** — anyone can inspect consensus, cryptography, and economics.
+- **Verifiable** — validators run the exact same code and compute identical state.
+- **Fork-resistant by design** — if governance ever fails, the community can continue the protocol without permission.
+- **Academically reviewable** — cryptographers and security researchers can find bugs before attackers do.
+
+Open source does not make PEMRIX easy to copy. The live network is defended by economic security, adoption, liquidity, and years of operational trust. The code is transparent; the network effect is the asset.
 
 ---
 
