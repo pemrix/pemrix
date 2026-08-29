@@ -46,8 +46,8 @@ pub struct BftConsensus<B: StateBackend> {
     rounds: BTreeMap<u64, RoundState>,
     /// Finalized blocks by height.
     finalized: BTreeMap<u64, Block>,
-    /// Validators that have already voted in the current height.
-    voted_this_height: BTreeSet<Address>,
+    /// Validators that have already voted in a given height.
+    voted_this_height: BTreeSet<(u64, Address)>,
 }
 
 impl BftConsensus<InMemoryBackend> {
@@ -134,7 +134,8 @@ impl<B: StateBackend> BftConsensus<B> {
         round_state.proposal = Some(proposal);
         round_state.block = Some(block);
 
-        if !self.voted_this_height.contains(&self.local_address) {
+        let vote_key = (height, self.local_address);
+        if !self.voted_this_height.contains(&vote_key) {
             let vote = Vote {
                 block_hash: round_state.proposal.as_ref().unwrap().block_hash,
                 height,
@@ -142,7 +143,7 @@ impl<B: StateBackend> BftConsensus<B> {
                 voter: *self.local_address.as_bytes(),
             };
             round_state.votes.insert(self.local_address, vote.clone());
-            self.voted_this_height.insert(self.local_address);
+            self.voted_this_height.insert(vote_key);
             Ok(vote)
         } else {
             Err(ConsensusError::InvalidVote)
@@ -288,7 +289,10 @@ impl<B: StateBackend> BftConsensus<B> {
             self.finalized.insert(height, block.clone());
             self.previous_hash = block.hash();
             self.height = height;
-            self.voted_this_height.clear();
+            // Voting state is keyed by height; remove entries for finalized
+            // height to keep memory bounded.
+            self.voted_this_height
+                .retain(|(h, _)| *h != height);
             Some(block)
         } else {
             None
@@ -333,7 +337,7 @@ impl<B: StateBackend> ConsensusEngine for BftConsensus<B> {
             voter: *self.local_address.as_bytes(),
         };
         round_state.votes.insert(self.local_address, vote);
-        self.voted_this_height.insert(self.local_address);
+        self.voted_this_height.insert((height, self.local_address));
 
         Ok(block)
     }
@@ -343,8 +347,9 @@ impl<B: StateBackend> ConsensusEngine for BftConsensus<B> {
         let round_state = self.rounds.entry(proposal.height).or_default();
         round_state.proposal = Some(proposal.clone());
 
-        // If we haven't voted yet and the proposal is valid, vote for it.
-        if !self.voted_this_height.contains(&self.local_address) {
+        // If we haven't voted yet for this height and the proposal is valid, vote for it.
+        let vote_key = (proposal.height, self.local_address);
+        if !self.voted_this_height.contains(&vote_key) {
             let vote = Vote {
                 block_hash: proposal.block_hash,
                 height: proposal.height,
@@ -352,7 +357,7 @@ impl<B: StateBackend> ConsensusEngine for BftConsensus<B> {
                 voter: *self.local_address.as_bytes(),
             };
             round_state.votes.insert(self.local_address, vote);
-            self.voted_this_height.insert(self.local_address);
+            self.voted_this_height.insert(vote_key);
         }
 
         Ok(())
