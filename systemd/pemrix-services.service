@@ -9,6 +9,7 @@ User=pemrix
 Group=pemrix
 WorkingDirectory=/var/lib/pemrix
 ExecStart=/usr/local/bin/pemrix services --rpc-url http://127.0.0.1:61001
+Environment="PEMRIX_BIND_HOST=0.0.0.0"
 Restart=always
 RestartSec=5
 
