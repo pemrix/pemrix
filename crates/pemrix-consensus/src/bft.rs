@@ -111,16 +111,24 @@ impl<B: StateBackend> BftConsensus<B> {
         &self.validator_set
     }
 
-    /// Attempt to finalize the pending block at the next height if a quorum
-    /// of votes has been collected.
+    /// Attempt to finalize any pending block for which a quorum of votes has
+    /// been collected. Returns the highest finalized block, if any.
     pub async fn finalize_pending(&mut self) -> Option<Block> {
-        let height = self.height + 1;
-        let round = self.rounds.get(&height)?;
-        let proposal = round.proposal.clone()?;
-        self.finalize(proposal.block_hash)
-            .await
-            .ok()
-            .map(|f| f.block)
+        let candidates: Vec<u64> = self
+            .rounds
+            .iter()
+            .filter(|(h, r)| **h > self.height && r.proposal.is_some())
+            .map(|(h, _)| *h)
+            .collect();
+        let mut finalized = None;
+        for height in candidates {
+            if let Some(proposal) = self.rounds.get(&height).and_then(|r| r.proposal.clone()) {
+                if let Ok(f) = self.finalize(proposal.block_hash).await {
+                    finalized = Some(f.block);
+                }
+            }
+        }
+        finalized
     }
 
     /// Handle a full block proposal and return the local validator's vote.
