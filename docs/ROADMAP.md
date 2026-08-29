@@ -48,8 +48,8 @@ This document is the single source of truth for what must be built, in what orde
 | 0.2 | Initial commit of all current code and docs | Pending | One clean foundational commit |
 | 0.3 | GitHub Actions CI/CD workflow | Pending | `cargo fmt`, `clippy`, `test` on every PR |
 | 0.4 | Branch protection rules documented | Pending | `main` branch protected |
-| 0.5 | Contributor guidelines | Pending | `CONTRIBUTING.md` |
-| 0.6 | Security policy | Pending | `SECURITY.md` |
+| 0.5 | Contributor guidelines | Done | `CONTRIBUTING.md` |
+| 0.6 | Security policy | Done | `SECURITY.md` |
 | 0.7 | Issue and PR templates | Pending | GitHub templates |
 
 **Exit criteria:**
