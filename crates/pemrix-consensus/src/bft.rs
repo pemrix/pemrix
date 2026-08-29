@@ -207,6 +207,10 @@ impl<B: StateBackend> BftConsensus<B> {
                 .map_err(|e| ConsensusError::ExecutionFailed(e.to_string()))?;
         }
 
+        // Recompute the validator set from on-chain validator records so that
+        // register/delegate/undelegate transactions take effect in the next round.
+        self.update_validator_set();
+
         let header = BlockHeader {
             height,
             timestamp: std::time::SystemTime::now()
@@ -226,6 +230,60 @@ impl<B: StateBackend> BftConsensus<B> {
             header,
             body: BlockBody { transactions },
         })
+    }
+
+    /// Rebuild the BFT validator set from on-chain validator records.
+    ///
+    /// Active validators are those with status `Active` and total stake above
+    /// the protocol-defined threshold. The top validators by stake are included
+    /// up to the maximum active set size.
+    fn update_validator_set(&mut self) {
+        let records = match self.state.validator_records() {
+            Ok(r) => r,
+            Err(e) => {
+                warn!(
+                    "[bft {}] failed to read validator records: {}",
+                    self.local_address, e
+                );
+                return;
+            }
+        };
+
+        let mut candidates: Vec<(Address, u64)> = records
+            .into_iter()
+            .filter(|(_, record)| {
+                record.status == pemrix_primitives::ValidatorStatus::Active
+                    && record.total_stake() >= pemrix_protocol::MIN_ACTIVE_STAKE
+            })
+            .map(|(address, record)| {
+                let power = record.total_stake().min(u64::MAX as u128) as u64;
+                (address, power)
+            })
+            .collect();
+
+        // Sort by stake descending, then by address ascending for determinism.
+        candidates.sort_by(|(a_addr, a_power), (b_addr, b_power)| {
+            b_power
+                .cmp(a_power)
+                .then_with(|| a_addr.as_bytes().cmp(b_addr.as_bytes()))
+        });
+
+        let max_validators = pemrix_protocol::MAX_ACTIVE_VALIDATORS as usize;
+        let active: Vec<(Address, u64)> = candidates.into_iter().take(max_validators).collect();
+
+        let mut new_set = ValidatorSet::new();
+        for (address, power) in active {
+            new_set.add(address, power);
+        }
+
+        if !new_set.is_empty() {
+            self.validator_set = new_set;
+        } else {
+            warn!(
+                "[bft {}] validator set would become empty; keeping previous set",
+                self.local_address
+            );
+        }
     }
 
     /// Validate a proposal against the current state.
@@ -537,5 +595,62 @@ mod tests {
         };
         let result = engine.handle_proposal(bad_proposal).await;
         assert!(matches!(result, Err(ConsensusError::InvalidProposal)));
+    }
+
+    #[tokio::test]
+    async fn staking_register_updates_validator_set() {
+        use pemrix_crypto::{Ed25519Scheme, SignatureScheme};
+        use pemrix_primitives::Transaction;
+        use pemrix_vm::{StakingExecutor, StakingOperation};
+
+        let scheme = Ed25519Scheme::new();
+        let proposer = addr("proposer");
+
+        // Initial validator set contains only the proposer.
+        let mut engine = BftConsensus::new(
+            proposer,
+            ValidatorSet::from_validators(vec![crate::Validator::new(proposer, 1)]),
+        );
+
+        // Generate a new validator keypair and fund it.
+        let keypair = scheme.generate_keypair().unwrap();
+        let new_validator = Address::from_public_key_hash(Hash::hash_bytes(&keypair.public.0));
+        let self_stake = 100_000 * pemrix_protocol::ONE_PMX;
+        engine.fund(new_validator, 200_000 * pemrix_protocol::ONE_PMX);
+
+        // Build a register-validator transaction.
+        let payload = StakingExecutor::encode(&StakingOperation::RegisterValidator {
+            consensus_pubkey: vec![1; 32],
+            commission_bps: 500,
+            self_stake,
+        });
+        let mut tx = Transaction {
+            sender: new_validator,
+            recipient: Address::default(),
+            amount: 0,
+            nonce: 0,
+            fee: 1,
+            public_key: keypair.public.0.clone(),
+            signature: vec![],
+            payload,
+        };
+        let signature = scheme
+            .sign(&keypair.secret, tx.signing_hash().as_bytes())
+            .unwrap();
+        tx.signature = signature.0;
+
+        // Propose a block containing the staking transaction.
+        let block = engine.propose(1, vec![tx]).await.unwrap();
+        assert_eq!(block.header.height, 1);
+
+        // The validator set should now include the newly registered validator.
+        assert!(
+            engine.validator_set.is_validator(&new_validator),
+            "new validator should be in the active set"
+        );
+        assert_eq!(
+            engine.validator_set.power(&new_validator),
+            Some(self_stake as u64)
+        );
     }
 }

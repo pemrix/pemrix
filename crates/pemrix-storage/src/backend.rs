@@ -3,6 +3,9 @@
 use crate::StorageError;
 use pemrix_primitives::{Account, Address, Hash};
 
+/// A raw key-value pair returned by prefix iteration.
+pub type RawEntry = (Vec<u8>, Vec<u8>);
+
 /// A storage backend for account state and arbitrary protocol records.
 pub trait StateBackend: Send + Sync {
     /// Get an account by address.
@@ -22,6 +25,9 @@ pub trait StateBackend: Send + Sync {
 
     /// Delete a raw key.
     fn delete_raw(&mut self, key: &[u8]) -> Result<(), StorageError>;
+
+    /// Iterate over raw key-value pairs matching the given prefix.
+    fn iter_raw_prefix(&self, prefix: &[u8]) -> Result<Vec<RawEntry>, StorageError>;
 
     /// Compute the state root.
     fn state_root(&self) -> Result<Hash, StorageError>;
@@ -68,6 +74,17 @@ impl StateBackend for InMemoryBackend {
     fn delete_raw(&mut self, key: &[u8]) -> Result<(), StorageError> {
         self.raw.remove(key);
         Ok(())
+    }
+
+    fn iter_raw_prefix(&self, prefix: &[u8]) -> Result<Vec<RawEntry>, StorageError> {
+        let prefix = prefix.to_vec();
+        let entries: Vec<RawEntry> = self
+            .raw
+            .range(prefix.clone()..)
+            .take_while(|(k, _)| k.starts_with(&prefix))
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        Ok(entries)
     }
 
     fn state_root(&self) -> Result<Hash, StorageError> {
@@ -164,6 +181,17 @@ impl StateBackend for RocksDbBackend {
         self.db
             .delete(key)
             .map_err(|e| StorageError::Backend(format!("rocksdb delete error: {e}")))
+    }
+
+    fn iter_raw_prefix(&self, prefix: &[u8]) -> Result<Vec<RawEntry>, StorageError> {
+        let mut entries = Vec::new();
+        let iter = self.db.prefix_iterator(prefix);
+        for item in iter {
+            let (key, value) =
+                item.map_err(|e| StorageError::Backend(format!("rocksdb iterator error: {e}")))?;
+            entries.push((key.to_vec(), value.to_vec()));
+        }
+        Ok(entries)
     }
 
     fn state_root(&self) -> Result<Hash, StorageError> {

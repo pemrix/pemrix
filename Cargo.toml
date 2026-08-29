@@ -44,6 +44,7 @@ pemrix-explorer = { path = "crates/pemrix-explorer" }
 pemrix-webhooks = { path = "crates/pemrix-webhooks" }
 pemrix-sandbox = { path = "crates/pemrix-sandbox" }
 pemrix-ports = { path = "crates/pemrix-ports" }
+pemrix-protocol = { path = "crates/pemrix-protocol" }
 
 thiserror = "1.0"
 serde = { version = "1.0", features = ["derive"] }

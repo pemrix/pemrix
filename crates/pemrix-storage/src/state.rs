@@ -158,6 +158,30 @@ impl<B: StateBackend> StateStore<B> {
         self.backend
             .delete_raw(&delegation_key(delegator, validator))
     }
+
+    /// Iterate over all validator records stored in state.
+    pub fn validator_records(&self) -> Result<Vec<(Address, ValidatorRecord)>, StorageError> {
+        let prefix = b"val:".to_vec();
+        let mut records = Vec::new();
+        for (key, value) in self.backend.iter_raw_prefix(&prefix)? {
+            if key.len() != prefix.len() + 32 {
+                continue;
+            }
+            let address_bytes: [u8; 32] = key[prefix.len()..]
+                .try_into()
+                .map_err(|_| StorageError::Backend("invalid validator key".to_string()))?;
+            let record: ValidatorRecord = pemrix_primitives::encoding::decode(&value)
+                .map_err(|_| StorageError::Serialization)?;
+            records.push((Address(address_bytes), record));
+        }
+        Ok(records)
+    }
+
+    /// Count the number of validator records in state.
+    #[cfg(test)]
+    pub fn validator_count(&self) -> Result<usize, StorageError> {
+        self.validator_records().map(|r| r.len())
+    }
 }
 
 fn validator_key(address: &Address) -> Vec<u8> {

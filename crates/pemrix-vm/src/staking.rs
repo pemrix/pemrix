@@ -66,6 +66,13 @@ impl StakingExecutor {
         Self
     }
 
+    /// Encode a staking operation into the VM payload format.
+    pub fn encode(op: &StakingOperation) -> Vec<u8> {
+        let mut payload = vec![0x01];
+        payload.extend_from_slice(&serde_json::to_vec(op).expect("staking op serializes"));
+        payload
+    }
+
     /// Decode a staking operation from raw payload bytes.
     pub fn decode(payload: &[u8]) -> Result<StakingOperation, VmError> {
         if payload.len() < 2 || payload[0] != 0x01 {

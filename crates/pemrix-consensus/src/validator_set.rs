@@ -59,6 +59,11 @@ impl ValidatorSet {
         self.validators.contains_key(address)
     }
 
+    /// Return the voting power for a validator, if known.
+    pub fn power(&self, address: &Address) -> Option<u64> {
+        self.validators.get(address).copied()
+    }
+
     /// Total voting power in the set.
     pub fn total_power(&self) -> u64 {
         self.validators.values().sum()

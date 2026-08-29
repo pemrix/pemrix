@@ -14,6 +14,7 @@ pemrix-primitives = { workspace = true }
 pemrix-crypto = { workspace = true }
 pemrix-storage = { workspace = true }
 pemrix-vm = { workspace = true }
+pemrix-protocol = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

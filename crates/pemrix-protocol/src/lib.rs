@@ -39,6 +39,10 @@ pub const MAX_SUPPLY: Balance = GENESIS_SUPPLY + MAX_PROTOCOL_ISSUANCE;
 /// genesis configuration and may be adjusted by governance.
 pub const MIN_SELF_STAKE: Balance = 10_000 * ONE_PMX;
 
+/// Minimum total stake (self + delegated) required for a validator to enter
+/// the active consensus set.
+pub const MIN_ACTIVE_STAKE: Balance = 100_000 * ONE_PMX;
+
 /// Minimum delegation amount.
 pub const MIN_DELEGATION: Balance = ONE_PMX;
 
@@ -57,6 +61,9 @@ pub const UNBONDING_PERIOD_BLOCKS: u64 = 241_920;
 pub const MIN_COMMISSION_BPS: u16 = 0;
 /// Maximum validator commission in basis points (20%).
 pub const MAX_COMMISSION_BPS: u16 = 2_000;
+
+/// Maximum number of validators in the active consensus set.
+pub const MAX_ACTIVE_VALIDATORS: u32 = 100;
 
 /// A protocol parameter bundle.
 ///
@@ -97,8 +104,8 @@ impl Default for ProtocolParameters {
     fn default() -> Self {
         Self {
             block_time_seconds: 8,
-            max_active_validators: 100,
-            min_active_stake: 100_000 * ONE_PMX,
+            max_active_validators: MAX_ACTIVE_VALIDATORS,
+            min_active_stake: MIN_ACTIVE_STAKE,
             base_fee_per_gas: 100,
             min_base_fee_per_gas: 1,
             max_base_fee_change_bps: 125,
@@ -118,8 +125,8 @@ impl ProtocolParameters {
     pub const fn new() -> Self {
         Self {
             block_time_seconds: 8,
-            max_active_validators: 100,
-            min_active_stake: 100_000 * ONE_PMX,
+            max_active_validators: MAX_ACTIVE_VALIDATORS,
+            min_active_stake: MIN_ACTIVE_STAKE,
             base_fee_per_gas: 100,
             min_base_fee_per_gas: 1,
             max_base_fee_change_bps: 125,
